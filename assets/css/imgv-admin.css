@@ -1,0 +1,345 @@
+/**
+ * IMGVerse Admin Styles
+ * 
+ * @package IMGVerse
+ * @author Krafty Sprouts Media, LLC
+ * @version 1.5.0
+ * @since 1.0.0
+ * @last_modified 10/24/2025
+ */
+
+/* Admin Header */
+.imgv-admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    border-left: 4px solid #0073aa;
+}
+
+.imgv-admin-info h2 {
+    margin: 0 0 10px 0;
+    color: #23282d;
+    font-size: 24px;
+}
+
+.imgv-admin-info p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.imgv-admin-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.imgv-admin-actions .button {
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+/* Settings Tabs */
+.imgv-settings-tabs {
+    margin-top: 20px;
+}
+
+.imgv-settings-tabs .nav-tab-wrapper {
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 0;
+}
+
+.imgv-settings-tabs .nav-tab {
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: #f1f1f1;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.imgv-settings-tabs .nav-tab:hover {
+    background: #f9f9f9;
+    color: #23282d;
+}
+
+.imgv-settings-tabs .nav-tab.nav-tab-active {
+    background: #fff;
+    color: #23282d;
+    border-color: #ccc;
+    border-bottom-color: #fff;
+    margin-bottom: -1px;
+}
+
+/* Tab Content */
+.tab-content {
+    display: none;
+    padding: 20px 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab-content h3 {
+    margin: 0 0 20px 0;
+    padding: 0 20px;
+    font-size: 18px;
+    color: #23282d;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.tab-content .form-table {
+    margin: 0;
+    padding: 0 20px;
+}
+
+.tab-content .form-table th {
+    width: 200px;
+    padding: 15px 10px 15px 0;
+    font-weight: 600;
+    color: #23282d;
+    vertical-align: top;
+}
+
+.tab-content .form-table td {
+    padding: 15px 0;
+    vertical-align: top;
+}
+
+.tab-content .form-table input[type="text"],
+.tab-content .form-table input[type="number"],
+.tab-content .form-table input[type="range"],
+.tab-content .form-table select,
+.tab-content .form-table textarea {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 14px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.tab-content .form-table input[type="range"] {
+    width: 200px;
+    margin-right: 10px;
+}
+
+.tab-content .form-table textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.tab-content .form-table .description {
+    font-size: 13px;
+    color: #666;
+    margin-top: 5px;
+    line-height: 1.4;
+}
+
+.tab-content .form-table code {
+    background: #f1f1f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #d63384;
+}
+
+/* Quality Slider */
+.imgv-quality-value {
+    margin-left: 10px;
+    font-weight: bold;
+    color: #0073aa;
+    font-size: 14px;
+}
+
+/* Cache Statistics */
+.imgv-cache-stats {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 15px;
+    border-left: 4px solid #00a32a;
+}
+
+.imgv-cache-stats p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #23282d;
+}
+
+.imgv-cache-stats strong {
+    color: #23282d;
+    font-weight: 600;
+}
+
+.imgv-cache-stats span {
+    color: #0073aa;
+    font-weight: 500;
+}
+
+/* Analytics */
+.imgv-analytics-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+.imgv-analytics-section h4 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    color: #23282d;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+}
+
+.imgv-analytics-placeholder {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-style: italic;
+    background: #fff;
+    border-radius: 4px;
+    border: 1px dashed #ddd;
+}
+
+/* Button Styles */
+.imgv-admin-actions .button-secondary {
+    background: #f6f7f7;
+    border-color: #ddd;
+    color: #50575e;
+}
+
+.imgv-admin-actions .button-secondary:hover {
+    background: #f0f0f1;
+    border-color: #8c8f94;
+    color: #1d2327;
+}
+
+/* Form Validation */
+.imgv-form-error {
+    color: #d63638;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.imgv-form-success {
+    color: #00a32a;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 782px) {
+    .imgv-admin-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+    }
+    
+    .imgv-admin-actions {
+        justify-content: center;
+    }
+    
+    .imgv-settings-tabs .nav-tab {
+        padding: 10px 15px;
+        font-size: 13px;
+    }
+    
+    .tab-content .form-table th {
+        width: 100%;
+        padding-bottom: 5px;
+    }
+    
+    .tab-content .form-table td {
+        padding-top: 5px;
+    }
+    
+    .tab-content .form-table input[type="text"],
+    .tab-content .form-table input[type="number"],
+    .tab-content .form-table select,
+    .tab-content .form-table textarea {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .imgv-admin-header {
+        padding: 15px;
+    }
+    
+    .imgv-admin-info h2 {
+        font-size: 20px;
+    }
+    
+    .imgv-settings-tabs .nav-tab {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .tab-content {
+        padding: 15px 0;
+    }
+    
+    .tab-content .form-table {
+        padding: 0 15px;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .imgv-admin-header {
+        background: #1e1e1e;
+        border-left-color: #72aee6;
+    }
+    
+    .imgv-admin-info h2 {
+        color: #fff;
+    }
+    
+    .imgv-admin-info p {
+        color: #ccc;
+    }
+    
+    .imgv-cache-stats {
+        background: #2c2c2c;
+        border-left-color: #4caf50;
+    }
+    
+    .imgv-cache-stats p {
+        color: #fff;
+    }
+    
+    .imgv-cache-stats strong {
+        color: #fff;
+    }
+    
+    .imgv-analytics-section {
+        background: #2c2c2c;
+    }
+    
+    .imgv-analytics-section h4 {
+        color: #fff;
+        border-bottom-color: #444;
+    }
+    
+    .imgv-analytics-placeholder {
+        background: #1e1e1e;
+        border-color: #444;
+        color: #ccc;
+    }
+}
