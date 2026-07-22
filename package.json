@@ -9,16 +9,17 @@
     "lint:js": "wp-scripts lint-js ./src"
   },
   "devDependencies": {
-    "@wordpress/scripts": "^30.0.0"
+    "@wordpress/scripts": "^30.0.0",
+    "jsdom": "^29.1.1"
   },
   "dependencies": {
+    "@wordpress/block-editor": "^14.0.0",
+    "@wordpress/blocks": "^14.0.0",
     "@wordpress/components": "^29.0.0",
     "@wordpress/data": "^10.0.0",
     "@wordpress/edit-post": "^8.0.0",
     "@wordpress/element": "^6.0.0",
     "@wordpress/i18n": "^5.0.0",
-    "@wordpress/plugins": "^7.0.0",
-    "@wordpress/blocks": "^14.0.0",
-    "@wordpress/block-editor": "^14.0.0"
+    "@wordpress/plugins": "^7.0.0"
   }
 }

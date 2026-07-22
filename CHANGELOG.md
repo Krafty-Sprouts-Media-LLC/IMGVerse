@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scaffold for React media-modal and plugin-sidebar builds (@wordpress/scripts).
 - JS `getThumbSrc` / `nextThumbOnError` thumbnail fallback helpers with Jest coverage.
 - Shared React `EmptyState` component for missing API key, no results, and error states.
+- Explicit `jsdom` devDependency so Jest (`test:js`) can resolve the jsdom test environment.
 
 ### Changed
 - `IMGV_API::import_image()` always downloads the full remote URL (no thumbnail/medium/large remote size); optional local resize from settings; import meta always written; `post_parent` set when `post_id > 0`.
