@@ -1,7 +1,14 @@
 /**
- * Plugin sidebar entry stub for @wordpress/scripts build.
+ * Plugin sidebar entry — compiles shared App until Task 9 mounts registerPlugin.
  *
  * @package IMGVerse
  */
 
-console.log( 'imgverse plugin-sidebar stub' );
+import '../scss/style.scss';
+import App from './components/App';
+
+// Retain the App graph in the production bundle for Tasks 8–9 mounts.
+window.imgvApp = App;
+
+export { App };
+export default App;

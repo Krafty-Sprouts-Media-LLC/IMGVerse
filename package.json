@@ -3,10 +3,10 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "start": "wp-scripts start",
-    "build": "wp-scripts build",
-    "test:js": "wp-scripts test-unit-js",
-    "lint:js": "wp-scripts lint-js ./src"
+    "start": "node node_modules/@wordpress/scripts/bin/wp-scripts.js start",
+    "build": "node node_modules/@wordpress/scripts/bin/wp-scripts.js build",
+    "test:js": "node node_modules/@wordpress/scripts/bin/wp-scripts.js test-unit-js",
+    "lint:js": "node node_modules/@wordpress/scripts/bin/wp-scripts.js lint-js ./src"
   },
   "devDependencies": {
     "@wordpress/scripts": "^30.0.0",

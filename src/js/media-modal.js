@@ -1,7 +1,14 @@
 /**
- * Media modal entry stub for @wordpress/scripts build.
+ * Media modal entry — compiles shared App until Task 8 mounts MediaFrame.
  *
  * @package IMGVerse
  */
 
-console.log( 'imgverse media-modal stub' );
+import '../scss/style.scss';
+import App from './components/App';
+
+// Retain the App graph in the production bundle for Tasks 8–9 mounts.
+window.imgvApp = App;
+
+export { App };
+export default App;

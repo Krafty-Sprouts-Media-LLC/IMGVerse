@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 22/07/2026
 
 ### Added
+- Shared React App (`App`, `ProviderNav`, `SearchBar`, `PhotoGrid`, `Photo`) with REST search/import client, Openverse source filter (incl. iNaturalist), thumb fallback, and Instant Images–like grid styles under IMGVerse branding.
 - REST API namespace `imgverse/v1` with `GET /search` and `POST /import` (permission: `upload_files`); AJAX handlers kept for compatibility.
 - `IMGV_API::maybe_resize_file()` for optional max download dimensions (`max_download_width` / `max_download_height`, default 2400×2400, 0 disables) with GD-backed unit tests.
 - Import meta `_imgv_provider` and `_imgv_source` alongside existing `_imgv_imported`, `_imgv_import_date`, `_imgv_original_url`.
