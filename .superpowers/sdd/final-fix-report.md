@@ -117,4 +117,4 @@ Local WP Admin browser smoke was **not** run (per instructions). Still required 
 
 ## Commits
 
-See git log on `feat/imgverse-editor-ux` after this fix commit (security/import + UX hardening for review findings).
+- `e2553a4` — fix: harden import download and media modal post-import UX
