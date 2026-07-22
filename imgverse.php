@@ -167,6 +167,9 @@ class IMGV_Core {
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-normalizer.php';
         require_once IMGV_PLUGIN_PATH . 'includes/providers/class-imgv-provider-interface.php';
         require_once IMGV_PLUGIN_PATH . 'includes/providers/class-imgv-provider-openverse.php';
+        require_once IMGV_PLUGIN_PATH . 'includes/providers/class-imgv-provider-unsplash.php';
+        require_once IMGV_PLUGIN_PATH . 'includes/providers/class-imgv-provider-pixabay.php';
+        require_once IMGV_PLUGIN_PATH . 'includes/providers/class-imgv-provider-pexels.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-api.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-media-tab.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-block-editor.php';
@@ -310,6 +313,7 @@ class IMGV_Core {
         }
         
         $query = sanitize_text_field($_POST['query'] ?? '');
+        $provider = sanitize_key($_POST['provider'] ?? 'openverse');
         $source = sanitize_text_field($_POST['source'] ?? '');
         $license = sanitize_text_field($_POST['license'] ?? '');
         $page = intval($_POST['page'] ?? 1);
@@ -317,8 +321,20 @@ class IMGV_Core {
         if (empty($query)) {
             wp_die(json_encode(array('success' => false, 'message' => __('Search query is required.', 'imgverse'))));
         }
+
+        if ('' === $provider) {
+            $provider = 'openverse';
+        }
         
-        $results = $this->components['api']->search_images($query, $source, $license, $page);
+        $results = $this->components['api']->search_images(
+            $query,
+            $provider,
+            array(
+                'source'  => $source,
+                'license' => $license,
+                'page'    => $page,
+            )
+        );
         
         wp_die(json_encode($results));
     }

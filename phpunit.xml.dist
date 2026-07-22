@@ -4,6 +4,7 @@
 		<testsuite name="IMGVerse">
 			<file>tests/php/test-class-imgv-normalizer.php</file>
 			<file>tests/php/test-class-imgv-provider-openverse.php</file>
+			<file>tests/php/test-provider-mappers.php</file>
 		</testsuite>
 	</testsuites>
 </phpunit>

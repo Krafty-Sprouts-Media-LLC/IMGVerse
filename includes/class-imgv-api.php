@@ -32,12 +32,12 @@ class IMGV_API {
     private $cache;
 
     /**
-     * Openverse provider adapter.
+     * Registered provider adapters.
      *
      * @since 2.0.0
-     * @var IMGV_Provider_Openverse
+     * @var array
      */
-    private $openverse_provider;
+    private $providers = array();
     
     /**
      * Available sources
@@ -90,48 +90,83 @@ class IMGV_API {
      */
     public function __construct() {
         $this->cache = new IMGV_Cache();
-        $this->openverse_provider = new IMGV_Provider_Openverse();
+        $this->providers = array(
+            'openverse' => new IMGV_Provider_Openverse(),
+            'unsplash'  => new IMGV_Provider_Unsplash(),
+            'pixabay'   => new IMGV_Provider_Pixabay(),
+            'pexels'    => new IMGV_Provider_Pexels(),
+        );
+    }
+
+    /**
+     * Resolve a provider adapter by slug.
+     *
+     * @since 2.0.0
+     * @param string $provider Provider slug.
+     * @return IMGV_Provider_Interface|null
+     */
+    private function get_provider( $provider ) {
+        $provider = sanitize_key( $provider );
+        if ( isset( $this->providers[ $provider ] ) ) {
+            return $this->providers[ $provider ];
+        }
+        return null;
     }
     
     /**
      * Search for images
      * 
      * @since 1.0.0
-     * @param string $query Search query
-     * @param string $source Source filter
-     * @param string $license License filter
-     * @param int $page Page number
+     * @param string $query    Search query
+     * @param string $provider Provider slug (openverse, unsplash, pixabay, pexels)
+     * @param array  $args     Provider args (source, license, page, page_size)
      * @return array Search results
      */
-    public function search_images($query, $source = '', $license = '', $page = 1) {
-        $provider  = 'openverse';
-        $cache_key = $this->generate_cache_key($provider, $query, $source, $license, $page);
-        
+    public function search_images( $query, $provider = 'openverse', $args = array() ) {
+        $provider = sanitize_key( $provider );
+        if ( '' === $provider ) {
+            $provider = 'openverse';
+        }
+
+        $adapter = $this->get_provider( $provider );
+        if ( ! $adapter ) {
+            return array(
+                'success' => false,
+                'message' => __( 'Unknown provider.', 'imgverse' ),
+                'images'  => array(),
+            );
+        }
+
+        $args = is_array( $args ) ? $args : array();
+        $page = isset( $args['page'] ) ? max( 1, (int) $args['page'] ) : 1;
+        if ( ! isset( $args['page'] ) ) {
+            $args['page'] = $page;
+        }
+        if ( ! isset( $args['page_size'] ) ) {
+            $args['page_size'] = 20;
+        }
+
+        $source  = isset( $args['source'] ) ? (string) $args['source'] : '';
+        $license = isset( $args['license'] ) ? (string) $args['license'] : '';
+        $cache_key = $this->generate_cache_key( $provider, $query, $source, $license, $page );
+
         // Check cache first
-        $cached_result = $this->cache->get($cache_key);
-        if ($cached_result !== false) {
+        $cached_result = $this->cache->get( $cache_key );
+        if ( false !== $cached_result ) {
             return $cached_result;
         }
 
-        $result = $this->openverse_provider->search(
-            $query,
-            array(
-                'source'    => $source,
-                'license'   => $license,
-                'page'      => $page,
-                'page_size' => 20,
-            )
-        );
+        $result = $adapter->search( $query, $args );
 
-        if (!isset($result['message'])) {
+        if ( ! isset( $result['message'] ) ) {
             $result['message'] = '';
         }
-        
+
         // Cache successful results
-        if (!empty($result['success'])) {
-            $this->cache->set($cache_key, $result, 1800); // 30 minutes
+        if ( ! empty( $result['success'] ) ) {
+            $this->cache->set( $cache_key, $result, 1800 ); // 30 minutes
         }
-        
+
         return $result;
     }
     

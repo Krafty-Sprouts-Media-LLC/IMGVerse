@@ -53,6 +53,7 @@ class IMGV_Admin {
      */
     public function sanitize_settings($input) {
         $sanitized = array();
+        $existing  = get_option('imgv_settings', array());
         
         // Search & Display Settings
         $sanitized['default_search_behavior'] = sanitize_text_field($input['default_search_behavior'] ?? 'all_sources');
@@ -81,6 +82,21 @@ class IMGV_Admin {
         $sanitized['rate_limiting'] = intval($input['rate_limiting'] ?? 60);
         $sanitized['cache_strategy'] = sanitize_text_field($input['cache_strategy'] ?? 'auto');
         $sanitized['background_processing'] = !empty($input['background_processing']);
+
+        // Provider API keys (empty password submit keeps existing value).
+        $key_fields = array(
+            'unsplash_access_key',
+            'pixabay_api_key',
+            'pexels_api_key',
+        );
+        foreach ($key_fields as $key_field) {
+            $submitted = isset($input[$key_field]) ? sanitize_text_field($input[$key_field]) : '';
+            if ('' === $submitted && !empty($existing[$key_field])) {
+                $sanitized[$key_field] = $existing[$key_field];
+            } else {
+                $sanitized[$key_field] = $submitted;
+            }
+        }
         
         return $sanitized;
     }
@@ -118,6 +134,7 @@ class IMGV_Admin {
                 <div class="imgv-settings-tabs">
                     <nav class="nav-tab-wrapper">
                         <a href="#search-display" class="nav-tab nav-tab-active"><?php _e('Search & Display', 'imgverse'); ?></a>
+                        <a href="#api-keys" class="nav-tab"><?php _e('API Keys', 'imgverse'); ?></a>
                         <a href="#attribution" class="nav-tab"><?php _e('Attribution', 'imgverse'); ?></a>
                         <a href="#import" class="nav-tab"><?php _e('Import', 'imgverse'); ?></a>
                         <a href="#performance" class="nav-tab"><?php _e('Performance', 'imgverse'); ?></a>
@@ -162,6 +179,34 @@ class IMGV_Admin {
                                 <td>
                                     <input type="number" name="imgv_settings[grid_columns]" value="<?php echo esc_attr($settings['grid_columns'] ?? 4); ?>" min="2" max="6" />
                                     <p class="description"><?php _e('Number of columns in the image grid.', 'imgverse'); ?></p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div id="api-keys" class="tab-content">
+                        <h3><?php _e('Provider API Keys', 'imgverse'); ?></h3>
+                        <p class="description"><?php _e('Openverse needs no key. Unsplash, Pixabay, and Pexels require your own API keys. Keys are stored server-side and are never sent to the editor JavaScript.', 'imgverse'); ?></p>
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row"><label for="imgv-unsplash-access-key"><?php _e('Unsplash Access Key', 'imgverse'); ?></label></th>
+                                <td>
+                                    <input type="password" id="imgv-unsplash-access-key" name="imgv_settings[unsplash_access_key]" value="<?php echo esc_attr($settings['unsplash_access_key'] ?? ''); ?>" class="regular-text" autocomplete="off" />
+                                    <p class="description"><?php _e('Leave blank to keep the existing key. Get a key from the Unsplash Developers dashboard.', 'imgverse'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="imgv-pixabay-api-key"><?php _e('Pixabay API Key', 'imgverse'); ?></label></th>
+                                <td>
+                                    <input type="password" id="imgv-pixabay-api-key" name="imgv_settings[pixabay_api_key]" value="<?php echo esc_attr($settings['pixabay_api_key'] ?? ''); ?>" class="regular-text" autocomplete="off" />
+                                    <p class="description"><?php _e('Leave blank to keep the existing key. Get a key from your Pixabay account.', 'imgverse'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="imgv-pexels-api-key"><?php _e('Pexels API Key', 'imgverse'); ?></label></th>
+                                <td>
+                                    <input type="password" id="imgv-pexels-api-key" name="imgv_settings[pexels_api_key]" value="<?php echo esc_attr($settings['pexels_api_key'] ?? ''); ?>" class="regular-text" autocomplete="off" />
+                                    <p class="description"><?php _e('Leave blank to keep the existing key. Get a key from the Pexels API dashboard.', 'imgverse'); ?></p>
                                 </td>
                             </tr>
                         </table>

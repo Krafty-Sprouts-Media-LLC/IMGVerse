@@ -8,13 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 22/07/2026
 
 ### Added
+- Unsplash, Pixabay, and Pexels provider adapters with API key settings and `map_item` unit fixtures.
 - Openverse provider adapter (`IMGV_Provider_Openverse`) with iNaturalist source support and `map_item` unit coverage.
 - Provider search interface (`IMGV_Provider_Interface`) for multi-provider adapters.
 - Shared `IMGV_Normalizer::from_parts()` for provider image results and PHPUnit coverage.
 - Scaffold for React media-modal and plugin-sidebar builds (@wordpress/scripts).
 
 ### Changed
-- `IMGV_API::search_images()` delegates Openverse search to the provider adapter; cache keys include provider + source.
+- `IMGV_API::search_images( $query, $provider, $args )` routes to Openverse/Unsplash/Pixabay/Pexels adapters; AJAX keeps Openverse `source`/`license` via args; cache keys include provider + source.
 - Version target for editor UX rebuild and multi-provider support.
 
 ## [1.6.0] - 2025-10-24
