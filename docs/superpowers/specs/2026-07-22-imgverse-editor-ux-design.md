@@ -1,7 +1,7 @@
 # IMGVerse — Editor UX Rebuild & Multi-Provider Design Spec
 
 **Date:** 2026-07-22  
-**Status:** Approved design (pending final spec review)  
+**Status:** Implemented / ready for QA  
 **Version target:** **2.0.0**  
 **Approach:** Shared React app (Instant Images pattern), keep IMGVerse Openverse backend
 

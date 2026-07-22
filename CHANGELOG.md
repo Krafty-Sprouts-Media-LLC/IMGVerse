@@ -28,7 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced Backbone/Underscore media modal tab (`assets/js/imgv-media-tab.js` + `print_media_templates`) with the React MediaFrame mount.
 - `IMGV_API::import_image()` always downloads the full remote URL (no thumbnail/medium/large remote size); optional local resize from settings; import meta always written; `post_parent` set when `post_id > 0`.
 - `IMGV_API::search_images( $query, $provider, $args )` routes to Openverse/Unsplash/Pixabay/Pexels adapters; AJAX keeps Openverse `source`/`license` via args; cache keys include provider + source.
+- README documents multi-provider search, Settings API keys, React media modal, and sidebar insert / featured image.
+- Design spec status set to Implemented / ready for QA.
 - Version target for editor UX rebuild and multi-provider support.
+
+### Removed
+- Unused Backbone media-tab script `assets/js/imgv-media-tab.js` and stylesheet `assets/css/imgv-media-tab.css` (replaced by React `build/media-modal.js` + `build/style-media-modal.css`).
+- Unused legacy block-editor script `assets/js/imgv-block-editor.js` and stylesheet `assets/css/imgv-block-editor.css` (replaced by React `build/plugin-sidebar.js`).
 
 ## [1.6.0] - 2025-10-24
 
