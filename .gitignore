@@ -1,0 +1,15 @@
+# Dependencies / build tools
+node_modules/
+vendor/
+.phpunit.result.cache
+
+# Isolated git worktrees
+.worktrees/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+
+# Local reference copy (not part of IMGVerse product)
+instant-images-main/
