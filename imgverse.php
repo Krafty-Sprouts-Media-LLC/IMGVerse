@@ -172,6 +172,7 @@ class IMGV_Core {
         require_once IMGV_PLUGIN_PATH . 'includes/providers/class-imgv-provider-pexels.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-api.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-rest.php';
+        require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-assets.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-media-tab.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-block-editor.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-cache.php';
@@ -180,6 +181,7 @@ class IMGV_Core {
         // Initialize components
         $this->components['api'] = new IMGV_API();
         $this->components['rest'] = new IMGV_REST( $this->components['api'] );
+        $this->components['assets'] = new IMGV_Assets();
         $this->components['media_tab'] = new IMGV_Media_Tab();
         $this->components['block_editor'] = new IMGV_Block_Editor();
         $this->components['cache'] = new IMGV_Cache();
