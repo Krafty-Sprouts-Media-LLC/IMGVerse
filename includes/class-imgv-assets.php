@@ -24,6 +24,7 @@ class IMGV_Assets {
 	 */
 	public function __construct() {
 		add_action( 'wp_enqueue_media', array( $this, 'enqueue_media' ) );
+		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_sidebar' ) );
 	}
 
 	/**
@@ -70,6 +71,52 @@ class IMGV_Assets {
 		}
 
 		wp_localize_script( 'imgv-media-modal', 'imgvData', $this->get_localize_data() );
+	}
+
+	/**
+	 * Enqueue the React plugin-sidebar bundle in the block editor.
+	 *
+	 * @since 2.0.0
+	 * @return void
+	 */
+	public function enqueue_sidebar() {
+		$asset_file = IMGV_PLUGIN_PATH . 'build/plugin-sidebar.asset.php';
+
+		if ( ! file_exists( $asset_file ) ) {
+			return;
+		}
+
+		$asset = include $asset_file;
+		$deps  = ( isset( $asset['dependencies'] ) && is_array( $asset['dependencies'] ) )
+			? $asset['dependencies']
+			: array();
+		$ver   = isset( $asset['version'] ) ? $asset['version'] : IMGV_VERSION;
+
+		wp_enqueue_script(
+			'imgv-plugin-sidebar',
+			IMGV_PLUGIN_URL . 'build/plugin-sidebar.js',
+			$deps,
+			$ver,
+			true
+		);
+
+		$style_path = IMGV_PLUGIN_PATH . 'build/style-media-modal.css';
+
+		if ( file_exists( $style_path ) ) {
+			wp_enqueue_style(
+				'imgv-plugin-sidebar',
+				IMGV_PLUGIN_URL . 'build/style-media-modal.css',
+				array(),
+				$ver
+			);
+
+			if ( file_exists( IMGV_PLUGIN_PATH . 'build/style-media-modal-rtl.css' ) ) {
+				wp_style_add_data( 'imgv-plugin-sidebar', 'rtl', 'replace' );
+			}
+		}
+
+		wp_localize_script( 'imgv-plugin-sidebar', 'imgvData', $this->get_localize_data() );
+		wp_set_script_translations( 'imgv-plugin-sidebar', 'imgverse' );
 	}
 
 	/**

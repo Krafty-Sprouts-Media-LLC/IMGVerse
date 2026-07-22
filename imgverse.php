@@ -94,9 +94,9 @@ class IMGV_Core {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
-        add_action('enqueue_block_editor_assets', array($this, 'enqueue_block_editor_assets'));
         
-        // AJAX hooks
+        // AJAX hooks (admin settings still uses imgv_search / imgv_clear_cache;
+        // editor UI uses REST imgverse/v1 — keep import/search AJAX for legacy files).
         add_action('wp_ajax_imgv_search', array($this, 'ajax_search_images'));
         add_action('wp_ajax_imgv_import', array($this, 'ajax_import_image'));
         add_action('wp_ajax_imgv_get_sources', array($this, 'ajax_get_sources'));
@@ -264,44 +264,6 @@ class IMGV_Core {
         if (!is_admin()) {
             return;
         }
-    }
-    
-    /**
-     * Enqueue block editor assets
-     * 
-     * @since 1.0.0
-     */
-    public function enqueue_block_editor_assets() {
-        if (!function_exists('get_current_screen')) {
-            return;
-        }
-        
-        $screen = get_current_screen();
-        if (!$screen || !$screen->is_block_editor) {
-            return;
-        }
-        
-        wp_enqueue_script(
-            'imgv-block-editor',
-            IMGV_PLUGIN_URL . 'assets/js/imgv-block-editor.js',
-            array('wp-plugins', 'wp-edit-post', 'wp-i18n', 'wp-element', 'wp-components', 'wp-data', 'wp-blocks'),
-            IMGV_VERSION,
-            true
-        );
-        
-        wp_enqueue_style(
-            'imgv-block-editor',
-            IMGV_PLUGIN_URL . 'assets/css/imgv-block-editor.css',
-            array(),
-            IMGV_VERSION
-        );
-        
-        wp_localize_script('imgv-block-editor', 'imgv_ajax', array(
-            'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('imgv_nonce'),
-        ));
-        
-        wp_set_script_translations('imgv-block-editor', 'imgverse');
     }
     
     /**

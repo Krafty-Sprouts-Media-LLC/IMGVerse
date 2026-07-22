@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 22/07/2026
 
 ### Added
+- Block editor plugin sidebar (`build/plugin-sidebar.js`) via `registerPlugin`, shared `<App context="sidebar" />`, and Insert / Set featured actions (`featured_media`) after import.
 - `IMGV_Assets` enqueues `build/media-modal.js` / `build/style-media-modal.css` on `wp_enqueue_media`, localizes `imgvData` (hasKey booleans only, never raw API keys), and mounts the React App into MediaFrame.Select/Post tab `imgverse` (`#imgverse-root`).
 - Shared React App (`App`, `ProviderNav`, `SearchBar`, `PhotoGrid`, `Photo`) with REST search/import client, Openverse source filter (incl. iNaturalist), thumb fallback, and Instant Images–like grid styles under IMGVerse branding.
 - REST API namespace `imgverse/v1` with `GET /search` and `POST /import` (permission: `upload_files`); AJAX handlers kept for compatibility.
@@ -23,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Explicit `jsdom` devDependency so Jest (`test:js`) can resolve the jsdom test environment.
 
 ### Changed
+- Block editor assets moved to `IMGV_Assets::enqueue_sidebar()` (`build/plugin-sidebar.js` + shared `style-media-modal.css`); legacy `assets/js/imgv-block-editor.js` registration removed.
 - Replaced Backbone/Underscore media modal tab (`assets/js/imgv-media-tab.js` + `print_media_templates`) with the React MediaFrame mount.
 - `IMGV_API::import_image()` always downloads the full remote URL (no thumbnail/medium/large remote size); optional local resize from settings; import meta always written; `post_parent` set when `post_id > 0`.
 - `IMGV_API::search_images( $query, $provider, $args )` routes to Openverse/Unsplash/Pixabay/Pexels adapters; AJAX keeps Openverse `source`/`license` via args; cache keys include provider + source.

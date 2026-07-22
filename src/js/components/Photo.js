@@ -1,18 +1,39 @@
 /**
- * Photo card with thumb fallback, meta editing, and import action.
+ * Photo card with thumb fallback, meta editing, and import/insert actions.
  *
  * @package IMGVerse
  */
 
+/* global imgvData */
+
 import { useState } from '@wordpress/element';
 import { getThumbSrc, nextThumbOnError } from '../utils/thumbFallback';
 import { getPostId, importImage } from '../utils/api';
+import { insertImage } from '../editor/insertImage';
+import { setFeaturedImage } from '../editor/setFeaturedImage';
+
+/**
+ * Preferred insert size from localized settings.
+ *
+ * @return {string} Size slug.
+ */
+function getDefaultInsertSize() {
+	if (
+		typeof imgvData !== 'undefined' &&
+		imgvData &&
+		imgvData.defaultInsertSize
+	) {
+		return imgvData.defaultInsertSize;
+	}
+
+	return 'large';
+}
 
 /**
  * Photo component.
  *
- * @param {Object} props       Component props.
- * @param {Object} props.image Normalized image result.
+ * @param {Object} props         Component props.
+ * @param {Object} props.image   Normalized image result.
  * @param {string} props.context App context (modal|sidebar).
  * @return {JSX.Element} Photo card markup.
  */
@@ -28,6 +49,11 @@ export default function Photo( { image, context } ) {
 	const [ status, setStatus ] = useState( '' );
 	const [ error, setError ] = useState( '' );
 	const [ expanded, setExpanded ] = useState( false );
+	const [ attachment, setAttachment ] = useState( null );
+	const [ featuredSet, setFeaturedSet ] = useState( false );
+	const [ inserted, setInserted ] = useState( false );
+
+	const isSidebar = 'sidebar' === context;
 
 	/**
 	 * Fall back from thumb to full when the preview fails.
@@ -51,6 +77,9 @@ export default function Photo( { image, context } ) {
 		setImporting( true );
 		setError( '' );
 		setStatus( '' );
+		setAttachment( null );
+		setFeaturedSet( false );
+		setInserted( false );
 
 		try {
 			const result = await importImage( {
@@ -65,9 +94,13 @@ export default function Photo( { image, context } ) {
 
 			if ( result && ( result.success || result.id || result.attachment_id ) ) {
 				setStatus( 'Imported' );
+				if ( result.attachment ) {
+					setAttachment( result.attachment );
+				}
 			} else {
 				setError(
-					( result && result.message ) || 'Import failed. Please try again.'
+					( result && result.message ) ||
+						'Import failed. Please try again.'
 				);
 			}
 		} catch ( err ) {
@@ -79,6 +112,30 @@ export default function Photo( { image, context } ) {
 		} finally {
 			setImporting( false );
 		}
+	}
+
+	/**
+	 * Insert the imported attachment into the block editor.
+	 */
+	function handleInsert() {
+		if ( ! attachment ) {
+			return;
+		}
+
+		insertImage( attachment, getDefaultInsertSize() );
+		setInserted( true );
+	}
+
+	/**
+	 * Set the imported attachment as the post featured image.
+	 */
+	function handleSetFeatured() {
+		if ( ! attachment || ! attachment.id ) {
+			return;
+		}
+
+		setFeaturedImage( attachment.id );
+		setFeaturedSet( true );
 	}
 
 	const userName =
@@ -116,6 +173,28 @@ export default function Photo( { image, context } ) {
 					>
 						{ importing ? 'Importing…' : status || 'Import' }
 					</button>
+					{ isSidebar && attachment ? (
+						<>
+							<button
+								type="button"
+								className="imgv-photo__action imgv-photo__action--primary"
+								onClick={ handleInsert }
+								disabled={ inserted }
+							>
+								{ inserted ? 'Inserted' : 'Insert' }
+							</button>
+							<button
+								type="button"
+								className="imgv-photo__action"
+								onClick={ handleSetFeatured }
+								disabled={ featuredSet }
+							>
+								{ featuredSet
+									? 'Featured set'
+									: 'Set featured' }
+							</button>
+						</>
+					) : null }
 				</div>
 			</div>
 			<div className="imgv-photo__meta">
