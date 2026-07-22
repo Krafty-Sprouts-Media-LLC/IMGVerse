@@ -1,0 +1,1 @@
+console.log("imgverse plugin-sidebar stub");

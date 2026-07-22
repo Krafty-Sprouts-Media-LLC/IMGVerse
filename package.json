@@ -1,0 +1,24 @@
+{
+  "name": "imgverse",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "start": "wp-scripts start",
+    "build": "wp-scripts build",
+    "test:js": "wp-scripts test-unit-js",
+    "lint:js": "wp-scripts lint-js ./src"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^30.0.0"
+  },
+  "dependencies": {
+    "@wordpress/components": "^29.0.0",
+    "@wordpress/data": "^10.0.0",
+    "@wordpress/edit-post": "^8.0.0",
+    "@wordpress/element": "^6.0.0",
+    "@wordpress/i18n": "^5.0.0",
+    "@wordpress/plugins": "^7.0.0",
+    "@wordpress/blocks": "^14.0.0",
+    "@wordpress/block-editor": "^14.0.0"
+  }
+}

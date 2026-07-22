@@ -5,6 +5,14 @@ All notable changes to IMGVerse will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 22/07/2026
+
+### Added
+- Scaffold for React media-modal and plugin-sidebar builds (@wordpress/scripts).
+
+### Changed
+- Version target for editor UX rebuild and multi-provider support.
+
 ## [1.6.0] - 2025-10-24
 
 ### Added
