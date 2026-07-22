@@ -30,6 +30,14 @@ class IMGV_API {
      * @var IMGV_Cache
      */
     private $cache;
+
+    /**
+     * Openverse provider adapter.
+     *
+     * @since 2.0.0
+     * @var IMGV_Provider_Openverse
+     */
+    private $openverse_provider;
     
     /**
      * Available sources
@@ -82,6 +90,7 @@ class IMGV_API {
      */
     public function __construct() {
         $this->cache = new IMGV_Cache();
+        $this->openverse_provider = new IMGV_Provider_Openverse();
     }
     
     /**
@@ -95,79 +104,33 @@ class IMGV_API {
      * @return array Search results
      */
     public function search_images($query, $source = '', $license = '', $page = 1) {
-        $cache_key = $this->generate_cache_key($query, $source, $license, $page);
+        $provider  = 'openverse';
+        $cache_key = $this->generate_cache_key($provider, $query, $source, $license, $page);
         
         // Check cache first
         $cached_result = $this->cache->get($cache_key);
         if ($cached_result !== false) {
             return $cached_result;
         }
-        
-        $api_url = IMGV_API_URL . 'images/';
-        $params = array(
-            'q' => $query,
-            'page' => $page,
-            'page_size' => 20,
-        );
-        
-        if (!empty($source)) {
-            $params['source'] = $source;
-        }
-        
-        if (!empty($license)) {
-            $params['license'] = $license;
-        }
-        
-        $request_url = $api_url . '?' . http_build_query($params);
-        
-        $response = wp_remote_get($request_url, array(
-            'timeout' => 30,
-            'headers' => array(
-                'User-Agent' => 'IMGVerseWordPressPlugin/' . IMGV_VERSION,
-                'Accept' => 'application/json'
+
+        $result = $this->openverse_provider->search(
+            $query,
+            array(
+                'source'    => $source,
+                'license'   => $license,
+                'page'      => $page,
+                'page_size' => 20,
             )
-        ));
-        
-        if (is_wp_error($response)) {
-            return array(
-                'success' => false,
-                'message' => $response->get_error_message(),
-                'images' => array(),
-                'page' => $page,
-                'total_pages' => 0,
-                'total_results' => 0
-            );
-        }
-        
-        $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body, true);
-        
-        if (!$data || !isset($data['results'])) {
-            return array(
-                'success' => false,
-                'message' => __('Invalid API response', 'imgverse'),
-                'images' => array(),
-                'page' => $page,
-                'total_pages' => 0,
-                'total_results' => 0
-            );
-        }
-        
-        $images = array();
-        foreach ($data['results'] as $result) {
-            $images[] = $this->process_image_data($result);
-        }
-        
-        $result = array(
-            'success' => true,
-            'images' => $images,
-            'page' => $page,
-            'total_pages' => ceil(($data['result_count'] ?? 0) / 20),
-            'total_results' => $data['result_count'] ?? 0
         );
+
+        if (!isset($result['message'])) {
+            $result['message'] = '';
+        }
         
-        // Cache the result
-        $this->cache->set($cache_key, $result, 1800); // 30 minutes
+        // Cache successful results
+        if (!empty($result['success'])) {
+            $this->cache->set($cache_key, $result, 1800); // 30 minutes
+        }
         
         return $result;
     }
@@ -434,13 +397,14 @@ class IMGV_API {
      * Generate cache key
      * 
      * @since 1.0.0
+     * @param string $provider Provider slug.
      * @param string $query Search query
      * @param string $source Source filter
      * @param string $license License filter
      * @param int $page Page number
      * @return string Cache key
      */
-    private function generate_cache_key($query, $source, $license, $page) {
-        return IMGV_CACHE_PREFIX . 'search_' . md5($query . $source . $license . $page);
+    private function generate_cache_key($provider, $query, $source, $license, $page) {
+        return IMGV_CACHE_PREFIX . 'search_' . md5($provider . $query . $source . $license . $page);
     }
 }

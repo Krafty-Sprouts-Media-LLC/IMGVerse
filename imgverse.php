@@ -164,6 +164,9 @@ class IMGV_Core {
      */
     private function load_components() {
         // Load required files
+        require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-normalizer.php';
+        require_once IMGV_PLUGIN_PATH . 'includes/providers/class-imgv-provider-interface.php';
+        require_once IMGV_PLUGIN_PATH . 'includes/providers/class-imgv-provider-openverse.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-api.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-media-tab.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-block-editor.php';
