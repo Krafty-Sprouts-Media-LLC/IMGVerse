@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 22/07/2026
 
 ### Added
+- Shared `IMGV_Normalizer::from_parts()` for provider image results and PHPUnit coverage.
 - Scaffold for React media-modal and plugin-sidebar builds (@wordpress/scripts).
 
 ### Changed

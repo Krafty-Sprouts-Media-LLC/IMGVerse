@@ -1,0 +1,12 @@
+{
+	"name": "kraftysprouts/imgverse",
+	"description": "IMGVerse WordPress plugin",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require-dev": {
+		"phpunit/phpunit": "^9.6"
+	},
+	"scripts": {
+		"test": "phpunit"
+	}
+}
