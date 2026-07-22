@@ -327,6 +327,17 @@ class IMGV_Core {
         if (empty($image_url)) {
             wp_die(json_encode(array('success' => false, 'message' => __('Image URL is required.', 'imgverse'))));
         }
+
+		if ( ! IMGV_API::user_can_attach_to_post( $post_id ) ) {
+			wp_die(
+				wp_json_encode(
+					array(
+						'success' => false,
+						'message' => __( 'You are not allowed to attach media to this post.', 'imgverse' ),
+					)
+				)
+			);
+		}
         
         $result = $this->components['api']->import_image($image_url, $title, $attribution, $alt_text, $size, $post_id);
         

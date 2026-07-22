@@ -12,6 +12,7 @@ import App from './components/App';
 
 let activeFrameId = '';
 let activeFrame = null;
+let mediaFrameInstance = null;
 let reactRoot = null;
 
 /**
@@ -98,6 +99,7 @@ function imgverseMediaTab() {
  * @param {Object} frame MediaFrame instance.
  */
 function storeActiveFrame( frame ) {
+	mediaFrameInstance = frame;
 	const state = frame.state();
 
 	if ( state && state.frame && state.frame.el ) {
@@ -105,6 +107,68 @@ function storeActiveFrame( frame ) {
 		activeFrame = state.frame.el;
 	}
 }
+
+/**
+ * After a successful import, switch to Media Library and select the attachment
+ * so Insert can be used without hunting (Instant Images style).
+ *
+ * @param {Object} attachment Attachment data (needs id).
+ */
+export function selectImportedAttachment( attachment ) {
+	if (
+		typeof wp === 'undefined' ||
+		! wp.media ||
+		! attachment ||
+		! attachment.id
+	) {
+		return;
+	}
+
+	const frame = mediaFrameInstance || wp.media.frame;
+
+	if ( ! frame ) {
+		return;
+	}
+
+	if ( frame.el ) {
+		const browseTab = frame.el.querySelector( '#menu-item-browse' );
+
+		if ( browseTab ) {
+			browseTab.click();
+		}
+	}
+
+	if ( frame.content && typeof frame.content.mode === 'function' ) {
+		frame.content.mode( 'browse' );
+	}
+
+	const state =
+		typeof frame.state === 'function' ? frame.state() : null;
+
+	if ( ! state || typeof state.get !== 'function' ) {
+		return;
+	}
+
+	const selection = state.get( 'selection' );
+
+	if ( ! selection ) {
+		return;
+	}
+
+	const model = wp.media.attachment( attachment.id );
+
+	model.fetch( {
+		success() {
+			selection.reset( model );
+
+			if ( typeof selection.trigger === 'function' ) {
+				selection.trigger( 'selection:single' );
+			}
+		},
+	} );
+}
+
+window.imgvSelectImportedAttachment = selectImportedAttachment;
 
 /**
  * Whether the IMGVerse router tab is currently selected.

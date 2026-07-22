@@ -82,14 +82,42 @@ if ( ! function_exists( 'current_user_can' ) ) {
 	/**
 	 * Stub current_user_can (overridable via $GLOBALS).
 	 *
-	 * @param string $cap Capability.
+	 * @param string   $cap       Capability.
+	 * @param int|null $object_id Optional object ID.
 	 * @return bool
 	 */
-	function current_user_can( $cap ) {
-		if ( isset( $GLOBALS['imgv_test_caps'][ $cap ] ) ) {
+	function current_user_can( $cap, $object_id = null ) {
+		if (
+			null !== $object_id &&
+			isset( $GLOBALS['imgv_test_caps'][ $cap ] ) &&
+			is_array( $GLOBALS['imgv_test_caps'][ $cap ] ) &&
+			isset( $GLOBALS['imgv_test_caps'][ $cap ][ $object_id ] )
+		) {
+			return (bool) $GLOBALS['imgv_test_caps'][ $cap ][ $object_id ];
+		}
+
+		if (
+			isset( $GLOBALS['imgv_test_caps'][ $cap ] ) &&
+			! is_array( $GLOBALS['imgv_test_caps'][ $cap ] )
+		) {
 			return (bool) $GLOBALS['imgv_test_caps'][ $cap ];
 		}
+
 		return false;
+	}
+}
+
+if ( ! function_exists( 'apply_filters' ) ) {
+	/**
+	 * Stub apply_filters.
+	 *
+	 * @param string $tag   Filter tag.
+	 * @param mixed  $value Value.
+	 * @return mixed
+	 */
+	function apply_filters( $tag, $value ) {
+		unset( $tag );
+		return $value;
 	}
 }
 
@@ -323,5 +351,94 @@ class Test_IMGV_API_Resize extends PHPUnit\Framework\TestCase {
 		$rest       = $reflection->newInstanceWithoutConstructor();
 
 		$this->assertFalse( $rest->can_upload() );
+	}
+
+	/**
+	 * Import URL allowlist rejects non-https and unknown hosts.
+	 *
+	 * @since 2.0.0
+	 * @return void
+	 */
+	public function test_is_allowed_import_url_rejects_unsafe_urls() {
+		$this->load_api();
+
+		$this->assertFalse( IMGV_API::is_allowed_import_url( 'http://images.unsplash.com/photo.jpg' ) );
+		$this->assertFalse( IMGV_API::is_allowed_import_url( 'https://evil.example/ssrf.png' ) );
+		$this->assertFalse( IMGV_API::is_allowed_import_url( 'https://127.0.0.1/secret.png' ) );
+		$this->assertFalse( IMGV_API::is_allowed_import_url( '' ) );
+	}
+
+	/**
+	 * Import URL allowlist accepts known provider CDN hosts over https.
+	 *
+	 * @since 2.0.0
+	 * @return void
+	 */
+	public function test_is_allowed_import_url_accepts_provider_hosts() {
+		$this->load_api();
+
+		$this->assertTrue( IMGV_API::is_allowed_import_url( 'https://images.unsplash.com/photo-123' ) );
+		$this->assertTrue( IMGV_API::is_allowed_import_url( 'https://cdn.pixabay.com/photo/1.jpg' ) );
+		$this->assertTrue( IMGV_API::is_allowed_import_url( 'https://images.pexels.com/photos/1.jpeg' ) );
+		$this->assertTrue( IMGV_API::is_allowed_import_url( 'https://upload.wikimedia.org/wikipedia/commons/a/a1/Test.jpg' ) );
+		$this->assertTrue( IMGV_API::is_allowed_import_url( 'https://static.inaturalist.org/photos/1.jpg' ) );
+		$this->assertTrue( IMGV_API::is_allowed_import_url( 'https://live.staticflickr.com/1/2_b.jpg' ) );
+	}
+
+	/**
+	 * MIME helper accepts real JPEG bytes and rejects plain text.
+	 *
+	 * @since 2.0.0
+	 * @return void
+	 */
+	public function test_downloaded_image_mime_validation() {
+		if ( ! function_exists( 'imagecreatetruecolor' ) || ! function_exists( 'imagejpeg' ) ) {
+			$this->markTestSkipped( 'GD extension is required for MIME unit tests.' );
+		}
+
+		$this->load_api();
+
+		$jpeg = $this->create_temp_jpeg( 32, 32 );
+		$text = tempnam( sys_get_temp_dir(), 'imgv' ) . '.txt';
+		file_put_contents( $text, 'not-an-image' );
+
+		try {
+			$mime = IMGV_API::get_downloaded_image_mime( $jpeg );
+			$this->assertSame( 'image/jpeg', $mime );
+			$this->assertTrue( IMGV_API::is_allowed_image_mime( $mime ) );
+
+			$bad = IMGV_API::get_downloaded_image_mime( $text );
+			$this->assertSame( '', $bad );
+			$this->assertFalse( IMGV_API::is_allowed_image_mime( $bad ) );
+			$this->assertFalse( IMGV_API::is_allowed_image_mime( 'text/plain' ) );
+		} finally {
+			if ( file_exists( $jpeg ) ) {
+				unlink( $jpeg );
+			}
+			if ( file_exists( $text ) ) {
+				unlink( $text );
+			}
+		}
+	}
+
+	/**
+	 * Attaching to a post requires edit_post for that post ID.
+	 *
+	 * @since 2.0.0
+	 * @return void
+	 */
+	public function test_user_can_attach_to_post_requires_edit_post() {
+		$this->load_api();
+
+		$GLOBALS['imgv_test_caps'] = array(
+			'edit_post' => array(
+				42 => false,
+				99 => true,
+			),
+		);
+
+		$this->assertTrue( IMGV_API::user_can_attach_to_post( 0 ) );
+		$this->assertFalse( IMGV_API::user_can_attach_to_post( 42 ) );
+		$this->assertTrue( IMGV_API::user_can_attach_to_post( 99 ) );
 	}
 }

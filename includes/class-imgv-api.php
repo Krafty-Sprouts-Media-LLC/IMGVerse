@@ -311,95 +311,278 @@ class IMGV_API {
 		return true;
 	}
 
-    /**
-     * Import image to WordPress media library
-     * 
-     * Always downloads the full remote URL. The $size argument is kept for
-     * AJAX compatibility and is not used to select a remote download size.
-     * Optional local max dimensions come from imgv_settings max_download_*.
-     *
-     * @since 1.0.0
-     * @param string $image_url   Image URL
-     * @param string $title       Image title
-     * @param string $attribution Attribution / caption text
-     * @param string $alt_text    Alt text
-     * @param string $size        Unused for remote download (compat only)
-     * @param int    $post_id     Post ID to attach image to (optional)
-     * @param string $provider    Provider slug for import meta (optional)
-     * @param string $source      Source slug for import meta (optional)
-     * @return array Import result
-     */
-    public function import_image( $image_url, $title, $attribution, $alt_text, $size = 'full', $post_id = null, $provider = '', $source = '' ) {
+	/**
+	 * Allowed import URL host suffixes (https only).
+	 *
+	 * @since 2.0.0
+	 * @return array
+	 */
+	public static function get_allowed_import_host_suffixes() {
+		$suffixes = array(
+			'unsplash.com',
+			'pixabay.com',
+			'pexels.com',
+			'wikimedia.org',
+			'wikipedia.org',
+			'inaturalist.org',
+			'inaturalist-open-data.s3.amazonaws.com',
+			'staticflickr.com',
+			'flickr.com',
+			'openverse.org',
+			'openverse.engineering',
+			'nypl.org',
+			'metmuseum.org',
+			'si.edu',
+			'smithsonian.org',
+			'rawpixel.com',
+		);
+
+		if ( function_exists( 'apply_filters' ) ) {
+			/**
+			 * Filter allowed import URL host suffixes.
+			 *
+			 * @since 2.0.0
+			 * @param array $suffixes Host suffixes (e.g. unsplash.com).
+			 */
+			$suffixes = apply_filters( 'imgv_allowed_import_host_suffixes', $suffixes );
+		}
+
+		return is_array( $suffixes ) ? $suffixes : array();
+	}
+
+	/**
+	 * Whether a remote URL is allowed for import (https + host allowlist).
+	 *
+	 * @since 2.0.0
+	 * @param string $url Image URL.
+	 * @return bool
+	 */
+	public static function is_allowed_import_url( $url ) {
+		if ( ! is_string( $url ) || '' === $url ) {
+			return false;
+		}
+
+		$parts = function_exists( 'wp_parse_url' ) ? wp_parse_url( $url ) : parse_url( $url );
+		if ( ! is_array( $parts ) || empty( $parts['scheme'] ) || empty( $parts['host'] ) ) {
+			return false;
+		}
+
+		if ( 'https' !== strtolower( (string) $parts['scheme'] ) ) {
+			return false;
+		}
+
+		$host = strtolower( (string) $parts['host'] );
+		foreach ( self::get_allowed_import_host_suffixes() as $suffix ) {
+			$suffix = strtolower( (string) $suffix );
+			if ( '' === $suffix ) {
+				continue;
+			}
+			if ( $host === $suffix || substr( $host, -strlen( '.' . $suffix ) ) === '.' . $suffix ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Detect image MIME for a local file.
+	 *
+	 * @since 2.0.0
+	 * @param string $file Absolute path.
+	 * @return string MIME type or empty string.
+	 */
+	public static function get_downloaded_image_mime( $file ) {
+		if ( ! is_string( $file ) || '' === $file || ! file_exists( $file ) ) {
+			return '';
+		}
+
+		if ( function_exists( 'wp_get_image_mime' ) ) {
+			$mime = wp_get_image_mime( $file );
+			if ( is_string( $mime ) && '' !== $mime ) {
+				return $mime;
+			}
+		}
+
+		$info = @getimagesize( $file );
+		if ( is_array( $info ) && ! empty( $info['mime'] ) ) {
+			return (string) $info['mime'];
+		}
+
+		return '';
+	}
+
+	/**
+	 * Whether a MIME type is an allowed import image type.
+	 *
+	 * @since 2.0.0
+	 * @param string $mime MIME type.
+	 * @return bool
+	 */
+	public static function is_allowed_image_mime( $mime ) {
+		$allowed = array(
+			'image/jpeg',
+			'image/png',
+			'image/gif',
+			'image/webp',
+		);
+
+		return in_array( (string) $mime, $allowed, true );
+	}
+
+	/**
+	 * Delete a local upload file if present.
+	 *
+	 * @since 2.0.0
+	 * @param string $file Absolute path.
+	 * @return void
+	 */
+	private static function delete_upload_file( $file ) {
+		if ( ! is_string( $file ) || '' === $file || ! file_exists( $file ) ) {
+			return;
+		}
+
+		if ( function_exists( 'wp_delete_file' ) ) {
+			wp_delete_file( $file );
+			return;
+		}
+
+		unlink( $file );
+	}
+
+	/**
+	 * Whether the current user may attach media to a post.
+	 *
+	 * @since 2.0.0
+	 * @param int $post_id Post ID (0 skips the check).
+	 * @return bool
+	 */
+	public static function user_can_attach_to_post( $post_id ) {
+		$post_id = (int) $post_id;
+		if ( $post_id <= 0 ) {
+			return true;
+		}
+
+		return current_user_can( 'edit_post', $post_id );
+	}
+
+	/**
+	 * Import image to WordPress media library
+	 *
+	 * Always downloads the full remote URL. The $size argument is kept for
+	 * AJAX compatibility and is not used to select a remote download size.
+	 * Optional local max dimensions come from imgv_settings max_download_*.
+	 *
+	 * @since 1.0.0
+	 * @param string $image_url   Image URL
+	 * @param string $title       Image title
+	 * @param string $attribution Attribution / caption text
+	 * @param string $alt_text    Alt text
+	 * @param string $size        Unused for remote download (compat only)
+	 * @param int    $post_id     Post ID to attach image to (optional)
+	 * @param string $provider    Provider slug for import meta (optional)
+	 * @param string $source      Source slug for import meta (optional)
+	 * @return array Import result
+	 */
+	public function import_image( $image_url, $title, $attribution, $alt_text, $size = 'full', $post_id = null, $provider = '', $source = '' ) {
 		unset( $size ); // Remote download always uses the full URL.
 
-        // Download the image
-        $image_data = wp_remote_get($image_url, array('timeout' => 60));
-        
-        if (is_wp_error($image_data)) {
-            return array(
-                'success' => false,
-                'message' => $image_data->get_error_message()
-            );
-        }
-        
-        $image_body = wp_remote_retrieve_body($image_data);
-        if (empty($image_body)) {
-            return array(
-                'success' => false,
-                'message' => __('Failed to download image', 'imgverse')
-            );
-        }
-        
-        // Get file info
-        $filename = $this->generate_filename($image_url, $title);
-        $upload = wp_upload_bits($filename, null, $image_body);
-        
-        if ($upload['error']) {
-            return array(
-                'success' => false,
-                'message' => $upload['error']
-            );
-        }
+		if ( ! self::is_allowed_import_url( $image_url ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Image URL is not from an allowed provider.', 'imgverse' ),
+			);
+		}
+
+		$image_data = wp_safe_remote_get(
+			$image_url,
+			array(
+				'timeout'     => 60,
+				'redirection' => 3,
+			)
+		);
+
+		if ( is_wp_error( $image_data ) ) {
+			return array(
+				'success' => false,
+				'message' => $image_data->get_error_message(),
+			);
+		}
+
+		$status_code = (int) wp_remote_retrieve_response_code( $image_data );
+		if ( $status_code < 200 || $status_code > 299 ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Failed to download image', 'imgverse' ),
+			);
+		}
+
+		$image_body = wp_remote_retrieve_body( $image_data );
+		if ( empty( $image_body ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Failed to download image', 'imgverse' ),
+			);
+		}
+
+		$filename = $this->generate_filename( $image_url, $title );
+		$upload   = wp_upload_bits( $filename, null, $image_body );
+
+		if ( ! empty( $upload['error'] ) ) {
+			return array(
+				'success' => false,
+				'message' => $upload['error'],
+			);
+		}
+
+		$file = isset( $upload['file'] ) ? $upload['file'] : '';
+		$mime = self::get_downloaded_image_mime( $file );
+		if ( ! self::is_allowed_image_mime( $mime ) ) {
+			self::delete_upload_file( $file );
+			return array(
+				'success' => false,
+				'message' => __( 'Downloaded file is not a valid image.', 'imgverse' ),
+			);
+		}
 
 		$settings = get_option( 'imgv_settings', array() );
 		$max_w    = isset( $settings['max_download_width'] ) ? (int) $settings['max_download_width'] : 2400;
 		$max_h    = isset( $settings['max_download_height'] ) ? (int) $settings['max_download_height'] : 2400;
-		$resized  = self::maybe_resize_file( $upload['file'], $max_w, $max_h );
+		$resized  = self::maybe_resize_file( $file, $max_w, $max_h );
 		if ( is_wp_error( $resized ) ) {
+			self::delete_upload_file( $file );
 			return array(
 				'success' => false,
 				'message' => $resized->get_error_message(),
 			);
 		}
-        
-        // Create attachment
-        $attachment = array(
-            'guid' => $upload['url'],
-            'post_mime_type' => wp_check_filetype($filename)['type'],
-            'post_title' => $title,
-            'post_content' => $attribution,
-            'post_excerpt' => $attribution,
-            'post_status' => 'inherit'
-        );
-        
-        $attachment_id = wp_insert_attachment($attachment, $upload['file']);
-        
-        if (is_wp_error($attachment_id)) {
-            return array(
-                'success' => false,
-                'message' => __('Failed to create attachment', 'imgverse')
-            );
-        }
-        
-        // Generate metadata
-        require_once(ABSPATH . 'wp-admin/includes/image.php');
-        $metadata = wp_generate_attachment_metadata($attachment_id, $upload['file']);
-        wp_update_attachment_metadata($attachment_id, $metadata);
-        
-        // Set alt text
-        if (!empty($alt_text)) {
-            update_post_meta($attachment_id, '_wp_attachment_image_alt', $alt_text);
-        }
+
+		$attachment = array(
+			'guid'           => $upload['url'],
+			'post_mime_type' => $mime,
+			'post_title'     => $title,
+			'post_content'   => $attribution,
+			'post_excerpt'   => $attribution,
+			'post_status'    => 'inherit',
+		);
+
+		$attachment_id = wp_insert_attachment( $attachment, $file );
+
+		if ( is_wp_error( $attachment_id ) ) {
+			self::delete_upload_file( $file );
+			return array(
+				'success' => false,
+				'message' => __( 'Failed to create attachment', 'imgverse' ),
+			);
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+		$metadata = wp_generate_attachment_metadata( $attachment_id, $file );
+		wp_update_attachment_metadata( $attachment_id, $metadata );
+
+		if ( ! empty( $alt_text ) ) {
+			update_post_meta( $attachment_id, '_wp_attachment_image_alt', $alt_text );
+		}
 
 		$post_id = (int) $post_id;
 		if ( $post_id > 0 ) {
@@ -416,19 +599,18 @@ class IMGV_API {
 		update_post_meta( $attachment_id, '_imgv_original_url', esc_url_raw( $image_url ) );
 		update_post_meta( $attachment_id, '_imgv_provider', sanitize_key( $provider ) );
 		update_post_meta( $attachment_id, '_imgv_source', sanitize_key( $source ) );
-        
-        // Get attachment details
-        $attachment_url = wp_get_attachment_url($attachment_id);
-        $attachment_data = wp_prepare_attachment_for_js($attachment_id);
-        
-        return array(
-            'success' => true,
-            'attachment_id' => $attachment_id,
-            'url' => $attachment_url,
-            'attachment' => $attachment_data,
-            'post_id' => $post_id
-        );
-    }
+
+		$attachment_url  = wp_get_attachment_url( $attachment_id );
+		$attachment_data = wp_prepare_attachment_for_js( $attachment_id );
+
+		return array(
+			'success'       => true,
+			'attachment_id' => $attachment_id,
+			'url'           => $attachment_url,
+			'attachment'    => $attachment_data,
+			'post_id'       => $post_id,
+		);
+	}
     
     /**
      * Generate attribution text

@@ -205,13 +205,22 @@ class IMGV_REST {
 			);
 		}
 
+		$post_id = (int) $request->get_param( 'post_id' );
+		if ( ! IMGV_API::user_can_attach_to_post( $post_id ) ) {
+			return new WP_Error(
+				'imgv_cannot_edit_post',
+				__( 'You are not allowed to attach media to this post.', 'imgverse' ),
+				array( 'status' => 403 )
+			);
+		}
+
 		$result = $this->api->import_image(
 			$url,
 			(string) $request->get_param( 'title' ),
 			(string) $request->get_param( 'caption' ),
 			(string) $request->get_param( 'alt' ),
 			'full',
-			(int) $request->get_param( 'post_id' ),
+			$post_id,
 			(string) $request->get_param( 'provider' ),
 			(string) $request->get_param( 'source' )
 		);

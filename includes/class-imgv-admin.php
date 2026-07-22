@@ -193,21 +193,21 @@ class IMGV_Admin {
                             <tr>
                                 <th scope="row"><label for="imgv-unsplash-access-key"><?php _e('Unsplash Access Key', 'imgverse'); ?></label></th>
                                 <td>
-                                    <input type="password" id="imgv-unsplash-access-key" name="imgv_settings[unsplash_access_key]" value="<?php echo esc_attr($settings['unsplash_access_key'] ?? ''); ?>" class="regular-text" autocomplete="off" />
+                                    <input type="password" id="imgv-unsplash-access-key" name="imgv_settings[unsplash_access_key]" value="" class="regular-text" autocomplete="off" />
                                     <p class="description"><?php _e('Leave blank to keep the existing key. Get a key from the Unsplash Developers dashboard.', 'imgverse'); ?></p>
                                 </td>
                             </tr>
                             <tr>
                                 <th scope="row"><label for="imgv-pixabay-api-key"><?php _e('Pixabay API Key', 'imgverse'); ?></label></th>
                                 <td>
-                                    <input type="password" id="imgv-pixabay-api-key" name="imgv_settings[pixabay_api_key]" value="<?php echo esc_attr($settings['pixabay_api_key'] ?? ''); ?>" class="regular-text" autocomplete="off" />
+                                    <input type="password" id="imgv-pixabay-api-key" name="imgv_settings[pixabay_api_key]" value="" class="regular-text" autocomplete="off" />
                                     <p class="description"><?php _e('Leave blank to keep the existing key. Get a key from your Pixabay account.', 'imgverse'); ?></p>
                                 </td>
                             </tr>
                             <tr>
                                 <th scope="row"><label for="imgv-pexels-api-key"><?php _e('Pexels API Key', 'imgverse'); ?></label></th>
                                 <td>
-                                    <input type="password" id="imgv-pexels-api-key" name="imgv_settings[pexels_api_key]" value="<?php echo esc_attr($settings['pexels_api_key'] ?? ''); ?>" class="regular-text" autocomplete="off" />
+                                    <input type="password" id="imgv-pexels-api-key" name="imgv_settings[pexels_api_key]" value="" class="regular-text" autocomplete="off" />
                                     <p class="description"><?php _e('Leave blank to keep the existing key. Get a key from the Pexels API dashboard.', 'imgverse'); ?></p>
                                 </td>
                             </tr>

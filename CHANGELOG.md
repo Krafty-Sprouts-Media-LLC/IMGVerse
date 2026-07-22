@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 22/07/2026
 
 ### Added
+- Sidebar per-image insert size select (thumbnail/medium/large/full) defaulting to `imgvData.defaultInsertSize`.
 - Block editor plugin sidebar (`build/plugin-sidebar.js`) via `registerPlugin`, shared `<App context="sidebar" />`, and Insert / Set featured actions (`featured_media`) after import.
 - `IMGV_Assets` enqueues `build/media-modal.js` / `build/style-media-modal.css` on `wp_enqueue_media`, localizes `imgvData` (hasKey booleans only, never raw API keys), and mounts the React App into MediaFrame.Select/Post tab `imgverse` (`#imgverse-root`).
 - Shared React App (`App`, `ProviderNav`, `SearchBar`, `PhotoGrid`, `Photo`) with REST search/import client, Openverse source filter (incl. iNaturalist), thumb fallback, and Instant Images–like grid styles under IMGVerse branding.
@@ -22,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - JS `getThumbSrc` / `nextThumbOnError` thumbnail fallback helpers with Jest coverage.
 - Shared React `EmptyState` component for missing API key, no results, and error states.
 - Explicit `jsdom` devDependency so Jest (`test:js`) can resolve the jsdom test environment.
+
+### Security
+- `IMGV_API::import_image()` uses `wp_safe_remote_get()`, requires HTTP 2xx, allowlists https provider CDN hosts, validates image MIME after download, and deletes orphaned uploads on MIME/resize/attachment failures.
+
+### Fixed
+- Media modal post-import flow selects the new attachment in the active `wp.media` frame (Instant Images style) so Insert works without hunting.
+- REST and AJAX import require `edit_post` for the target `post_id` when `post_id > 0`.
+- Provider API key password fields render empty (`value=""`); blank submit still preserves existing keys via sanitize.
 
 ### Changed
 - Block editor assets moved to `IMGV_Assets::enqueue_sidebar()` (`build/plugin-sidebar.js` + shared `style-media-modal.css`); legacy `assets/js/imgv-block-editor.js` registration removed.

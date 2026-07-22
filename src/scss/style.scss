@@ -348,7 +348,8 @@
 	font-size: 11px;
 
 	input,
-	textarea {
+	textarea,
+	select {
 		width: 100%;
 		border: 1px solid var(--imgv-border);
 		border-radius: 4px;
@@ -357,6 +358,10 @@
 		color: var(--imgv-text);
 		resize: vertical;
 	}
+}
+
+.imgv-photo__field--size {
+	margin-top: 6px;
 }
 
 .imgv-app__load-more {

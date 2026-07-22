@@ -45,6 +45,7 @@ export default function Photo( { image, context } ) {
 	const [ caption, setCaption ] = useState(
 		image.attribution || image.caption || ''
 	);
+	const [ insertSize, setInsertSize ] = useState( getDefaultInsertSize );
 	const [ importing, setImporting ] = useState( false );
 	const [ status, setStatus ] = useState( '' );
 	const [ error, setError ] = useState( '' );
@@ -94,8 +95,21 @@ export default function Photo( { image, context } ) {
 
 			if ( result && ( result.success || result.id || result.attachment_id ) ) {
 				setStatus( 'Imported' );
-				if ( result.attachment ) {
-					setAttachment( result.attachment );
+				const nextAttachment =
+					result.attachment ||
+					( result.attachment_id
+						? { id: result.attachment_id, url: result.url || '' }
+						: null );
+
+				if ( nextAttachment ) {
+					setAttachment( nextAttachment );
+
+					if (
+						! isSidebar &&
+						typeof window.imgvSelectImportedAttachment === 'function'
+					) {
+						window.imgvSelectImportedAttachment( nextAttachment );
+					}
 				}
 			} else {
 				setError(
@@ -122,7 +136,7 @@ export default function Photo( { image, context } ) {
 			return;
 		}
 
-		insertImage( attachment, getDefaultInsertSize() );
+		insertImage( attachment, insertSize );
 		setInserted( true );
 	}
 
@@ -205,6 +219,22 @@ export default function Photo( { image, context } ) {
 					<p className="imgv-photo__error" role="alert">
 						{ error }
 					</p>
+				) : null }
+				{ isSidebar ? (
+					<label className="imgv-photo__field imgv-photo__field--size">
+						<span>Insert size</span>
+						<select
+							value={ insertSize }
+							onChange={ ( event ) =>
+								setInsertSize( event.target.value )
+							}
+						>
+							<option value="thumbnail">Thumbnail</option>
+							<option value="medium">Medium</option>
+							<option value="large">Large</option>
+							<option value="full">Full</option>
+						</select>
+					</label>
 				) : null }
 				{ expanded ? (
 					<div className="imgv-photo__fields">
