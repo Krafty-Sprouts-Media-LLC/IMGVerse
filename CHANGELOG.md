@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `IMGV_Assets` enqueues `build/media-modal.js` / `build/style-media-modal.css` on `wp_enqueue_media`, localizes `imgvData` (hasKey booleans only, never raw API keys), and mounts the React App into MediaFrame.Select/Post tab `imgverse` (`#imgverse-root`).
-- Shared React App (`App`, `ProviderNav`, `SearchBar`, `PhotoGrid`, `Photo`) with REST search/import client, Openverse source filter (incl. iNaturalist), thumb fallback, and Instant Imagesâ€“like grid styles under IMGVerse branding.
+- Shared React App (`App`, `ProviderNav`, `SearchBar`, `PhotoGrid`, `Photo`) with REST search/import client, Openverse source filter (incl. iNaturalist), thumb fallback, and Instant Images–like grid styles under IMGVerse branding.
 - REST API namespace `imgverse/v1` with `GET /search` and `POST /import` (permission: `upload_files`); AJAX handlers kept for compatibility.
-- `IMGV_API::maybe_resize_file()` for optional max download dimensions (`max_download_width` / `max_download_height`, default 2400Ã—2400, 0 disables) with GD-backed unit tests.
+- `IMGV_API::maybe_resize_file()` for optional max download dimensions (`max_download_width` / `max_download_height`, default 2400×2400, 0 disables) with GD-backed unit tests.
 - Import meta `_imgv_provider` and `_imgv_source` alongside existing `_imgv_imported`, `_imgv_import_date`, `_imgv_original_url`.
 - Unsplash, Pixabay, and Pexels provider adapters with API key settings and `map_item` unit fixtures.
 - Openverse provider adapter (`IMGV_Provider_Openverse`) with iNaturalist source support and `map_item` unit coverage.
@@ -31,7 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.6.0] - 2025-10-24
 
 ### Added
-- `IMGV_Assets` enqueues `build/media-modal.js` / `build/style-media-modal.css` on `wp_enqueue_media`, localizes `imgvData` (hasKey booleans only, never raw API keys), and mounts the React App into MediaFrame.Select/Post tab `imgverse` (`#imgverse-root`).
 - **Post Attachment System**: Imported images are now properly attached to the post they were imported from
 - **Import Tracking**: Custom meta fields (`_imgv_imported`, `_imgv_import_date`, `_imgv_original_url`) track import source and details
 - **Post Image Queries**: Helper function `get_post_images()` to retrieve images attached to specific posts
@@ -40,7 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **WordPress Integration**: Uses native `post_parent` relationship for proper WordPress attachment handling
 
 ### Changed
-- Replaced Backbone/Underscore media modal tab (`assets/js/imgv-media-tab.js` + `print_media_templates`) with the React MediaFrame mount.
 - **Import Function**: Enhanced `import_image()` method to accept optional `$post_id` parameter
 - **JavaScript Integration**: Updated both media tab and block editor JavaScript to send post ID
 - **Admin Interface**: Added helper functions for post-specific image management
@@ -54,7 +52,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.0] - 2025-10-24
 
 ### Added
-- `IMGV_Assets` enqueues `build/media-modal.js` / `build/style-media-modal.css` on `wp_enqueue_media`, localizes `imgvData` (hasKey booleans only, never raw API keys), and mounts the React App into MediaFrame.Select/Post tab `imgverse` (`#imgverse-root`).
 - Initial release of IMGVerse WordPress plugin
 - **Post Attachment**: Imported images are now properly attached to the post they were imported from
 - **Import Tracking**: Custom meta fields track import source, date, and original URL
