@@ -171,6 +171,7 @@ class IMGV_Core {
         require_once IMGV_PLUGIN_PATH . 'includes/providers/class-imgv-provider-pixabay.php';
         require_once IMGV_PLUGIN_PATH . 'includes/providers/class-imgv-provider-pexels.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-api.php';
+        require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-rest.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-media-tab.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-block-editor.php';
         require_once IMGV_PLUGIN_PATH . 'includes/class-imgv-cache.php';
@@ -178,6 +179,7 @@ class IMGV_Core {
         
         // Initialize components
         $this->components['api'] = new IMGV_API();
+        $this->components['rest'] = new IMGV_REST( $this->components['api'] );
         $this->components['media_tab'] = new IMGV_Media_Tab();
         $this->components['block_editor'] = new IMGV_Block_Editor();
         $this->components['cache'] = new IMGV_Cache();
@@ -441,6 +443,8 @@ class IMGV_Core {
             'max_cache_size' => 10485760, // 10MB
             'enable_infinite_scroll' => true,
             'results_per_page' => 20,
+            'max_download_width' => 2400,
+            'max_download_height' => 2400,
         );
         
         add_option('imgv_settings', $default_options);

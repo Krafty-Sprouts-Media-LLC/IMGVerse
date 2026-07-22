@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 22/07/2026
 
 ### Added
+- REST API namespace `imgverse/v1` with `GET /search` and `POST /import` (permission: `upload_files`); AJAX handlers kept for compatibility.
+- `IMGV_API::maybe_resize_file()` for optional max download dimensions (`max_download_width` / `max_download_height`, default 2400×2400, 0 disables) with GD-backed unit tests.
+- Import meta `_imgv_provider` and `_imgv_source` alongside existing `_imgv_imported`, `_imgv_import_date`, `_imgv_original_url`.
 - Unsplash, Pixabay, and Pexels provider adapters with API key settings and `map_item` unit fixtures.
 - Openverse provider adapter (`IMGV_Provider_Openverse`) with iNaturalist source support and `map_item` unit coverage.
 - Provider search interface (`IMGV_Provider_Interface`) for multi-provider adapters.
@@ -15,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scaffold for React media-modal and plugin-sidebar builds (@wordpress/scripts).
 
 ### Changed
+- `IMGV_API::import_image()` always downloads the full remote URL (no thumbnail/medium/large remote size); optional local resize from settings; import meta always written; `post_parent` set when `post_id > 0`.
 - `IMGV_API::search_images( $query, $provider, $args )` routes to Openverse/Unsplash/Pixabay/Pexels adapters; AJAX keeps Openverse `source`/`license` via args; cache keys include provider + source.
 - Version target for editor UX rebuild and multi-provider support.
 

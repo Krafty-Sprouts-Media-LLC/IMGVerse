@@ -73,6 +73,8 @@ class IMGV_Admin {
         $sanitized['file_naming'] = sanitize_text_field($input['file_naming'] ?? 'title');
         $sanitized['import_location'] = sanitize_text_field($input['import_location'] ?? 'default');
         $sanitized['duplicate_handling'] = sanitize_text_field($input['duplicate_handling'] ?? 'rename');
+        $sanitized['max_download_width'] = max( 0, intval( $input['max_download_width'] ?? 2400 ) );
+        $sanitized['max_download_height'] = max( 0, intval( $input['max_download_height'] ?? 2400 ) );
         
         // API & Performance Settings
         $sanitized['cache_duration'] = intval($input['cache_duration'] ?? 1800);
@@ -302,6 +304,21 @@ class IMGV_Admin {
                                             <?php _e('Full Size', 'imgverse'); ?>
                                         </option>
                                     </select>
+                                    <p class="description"><?php _e('Used for display defaults. Remote imports always download the full image URL; use max download dimensions below to limit stored size.', 'imgverse'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="imgv-max-download-width"><?php _e( 'Max Download Width', 'imgverse' ); ?></label></th>
+                                <td>
+                                    <input type="number" id="imgv-max-download-width" name="imgv_settings[max_download_width]" value="<?php echo esc_attr( $settings['max_download_width'] ?? 2400 ); ?>" min="0" max="10000" />
+                                    <p class="description"><?php _e( 'Max width in pixels after import. Use 0 with height 0 to disable resizing (default 2400).', 'imgverse' ); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="imgv-max-download-height"><?php _e( 'Max Download Height', 'imgverse' ); ?></label></th>
+                                <td>
+                                    <input type="number" id="imgv-max-download-height" name="imgv_settings[max_download_height]" value="<?php echo esc_attr( $settings['max_download_height'] ?? 2400 ); ?>" min="0" max="10000" />
+                                    <p class="description"><?php _e( 'Max height in pixels after import. Use 0 with width 0 to disable resizing (default 2400).', 'imgverse' ); ?></p>
                                 </td>
                             </tr>
                             <tr>

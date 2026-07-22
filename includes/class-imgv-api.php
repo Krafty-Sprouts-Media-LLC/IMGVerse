@@ -9,9 +9,11 @@
  * @last_modified 10/24/2025
  */
 
-// Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
+// Prevent direct access (allow PHPUnit bootstrap without WordPress).
+if ( ! defined( 'ABSPATH' ) ) {
+	if ( ! defined( 'IMGV_TEST_BOOTSTRAP' ) ) {
+		exit;
+	}
 }
 
 /**
@@ -257,19 +259,79 @@ class IMGV_API {
         return __('Unknown', 'imgverse');
     }
     
+	/**
+	 * Optionally resize a local image file to max width/height.
+	 *
+	 * Pass 0 for either dimension to leave that side unconstrained.
+	 * Pass 0 for both to disable resizing.
+	 *
+	 * @since 2.0.0
+	 * @param string $file  Absolute path to image file.
+	 * @param int    $max_w Max width in pixels (0 = unconstrained / disabled with max_h 0).
+	 * @param int    $max_h Max height in pixels (0 = unconstrained / disabled with max_w 0).
+	 * @return true|WP_Error True on success or when resize is skipped.
+	 */
+	public static function maybe_resize_file( $file, $max_w, $max_h ) {
+		$max_w = (int) $max_w;
+		$max_h = (int) $max_h;
+
+		if ( $max_w <= 0 && $max_h <= 0 ) {
+			return true;
+		}
+
+		if ( ! is_string( $file ) || '' === $file || ! file_exists( $file ) ) {
+			return new WP_Error(
+				'imgv_resize_missing_file',
+				__( 'Image file not found for resize.', 'imgverse' )
+			);
+		}
+
+		if ( ! function_exists( 'wp_get_image_editor' ) ) {
+			return new WP_Error(
+				'imgv_resize_unavailable',
+				__( 'Image editor is unavailable.', 'imgverse' )
+			);
+		}
+
+		$editor = wp_get_image_editor( $file );
+		if ( is_wp_error( $editor ) ) {
+			return $editor;
+		}
+
+		$resized = $editor->resize( $max_w > 0 ? $max_w : null, $max_h > 0 ? $max_h : null, false );
+		if ( is_wp_error( $resized ) ) {
+			return $resized;
+		}
+
+		$saved = $editor->save( $file );
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		return true;
+	}
+
     /**
      * Import image to WordPress media library
      * 
+     * Always downloads the full remote URL. The $size argument is kept for
+     * AJAX compatibility and is not used to select a remote download size.
+     * Optional local max dimensions come from imgv_settings max_download_*.
+     *
      * @since 1.0.0
-     * @param string $image_url Image URL
-     * @param string $title Image title
-     * @param string $attribution Attribution text
-     * @param string $alt_text Alt text
-     * @param string $size Image size to import
-     * @param int $post_id Post ID to attach image to (optional)
+     * @param string $image_url   Image URL
+     * @param string $title       Image title
+     * @param string $attribution Attribution / caption text
+     * @param string $alt_text    Alt text
+     * @param string $size        Unused for remote download (compat only)
+     * @param int    $post_id     Post ID to attach image to (optional)
+     * @param string $provider    Provider slug for import meta (optional)
+     * @param string $source      Source slug for import meta (optional)
      * @return array Import result
      */
-    public function import_image($image_url, $title, $attribution, $alt_text, $size = 'full', $post_id = null) {
+    public function import_image( $image_url, $title, $attribution, $alt_text, $size = 'full', $post_id = null, $provider = '', $source = '' ) {
+		unset( $size ); // Remote download always uses the full URL.
+
         // Download the image
         $image_data = wp_remote_get($image_url, array('timeout' => 60));
         
@@ -298,6 +360,17 @@ class IMGV_API {
                 'message' => $upload['error']
             );
         }
+
+		$settings = get_option( 'imgv_settings', array() );
+		$max_w    = isset( $settings['max_download_width'] ) ? (int) $settings['max_download_width'] : 2400;
+		$max_h    = isset( $settings['max_download_height'] ) ? (int) $settings['max_download_height'] : 2400;
+		$resized  = self::maybe_resize_file( $upload['file'], $max_w, $max_h );
+		if ( is_wp_error( $resized ) ) {
+			return array(
+				'success' => false,
+				'message' => $resized->get_error_message(),
+			);
+		}
         
         // Create attachment
         $attachment = array(
@@ -327,19 +400,22 @@ class IMGV_API {
         if (!empty($alt_text)) {
             update_post_meta($attachment_id, '_wp_attachment_image_alt', $alt_text);
         }
-        
-        // Attach image to post if post_id is provided
-        if ($post_id && $post_id > 0) {
-            wp_update_post(array(
-                'ID' => $attachment_id,
-                'post_parent' => $post_id
-            ));
-            
-            // Add custom meta to track import source
-            update_post_meta($attachment_id, '_imgv_imported', true);
-            update_post_meta($attachment_id, '_imgv_import_date', current_time('mysql'));
-            update_post_meta($attachment_id, '_imgv_original_url', $image_url);
-        }
+
+		$post_id = (int) $post_id;
+		if ( $post_id > 0 ) {
+			wp_update_post(
+				array(
+					'ID'          => $attachment_id,
+					'post_parent' => $post_id,
+				)
+			);
+		}
+
+		update_post_meta( $attachment_id, '_imgv_imported', true );
+		update_post_meta( $attachment_id, '_imgv_import_date', current_time( 'mysql' ) );
+		update_post_meta( $attachment_id, '_imgv_original_url', esc_url_raw( $image_url ) );
+		update_post_meta( $attachment_id, '_imgv_provider', sanitize_key( $provider ) );
+		update_post_meta( $attachment_id, '_imgv_source', sanitize_key( $source ) );
         
         // Get attachment details
         $attachment_url = wp_get_attachment_url($attachment_id);
