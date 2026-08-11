@@ -110,468 +110,226 @@ class IMGV_Admin {
      */
     public function render_settings_page() {
         $settings = get_option('imgv_settings', array());
-        $cache_stats = get_option('imgv_cache_stats', array());
+        if ( ! is_array( $settings ) ) {
+            $settings = array();
+        }
+        $stats = self::get_import_stats();
         ?>
-        <div class="wrap">
-            <h1><?php _e('IMGVerse Settings', 'imgverse'); ?></h1>
-            
-            <div class="imgv-admin-header">
-                <div class="imgv-admin-info">
-                    <h2><?php _e('Creative Commons Image Search & Import', 'imgverse'); ?></h2>
-                    <p><?php _e('Search and import Creative Commons images from Openverse directly into your WordPress posts and pages.', 'imgverse'); ?></p>
+        <div class="wrap imgv-settings">
+            <div class="imgv-settings__hero">
+                <div>
+                    <h1><?php esc_html_e( 'IMGVerse Settings', 'imgverse' ); ?></h1>
+                    <p><?php esc_html_e( 'Configure providers, attribution, import limits, and search defaults used by the media modal and sidebar.', 'imgverse' ); ?></p>
                 </div>
-                <div class="imgv-admin-actions">
+                <div class="imgv-settings__actions">
                     <button type="button" id="imgv-clear-cache" class="button button-secondary">
-                        <?php _e('Clear Cache', 'imgverse'); ?>
+                        <?php esc_html_e( 'Clear Cache', 'imgverse' ); ?>
                     </button>
                     <button type="button" id="imgv-test-api" class="button button-secondary">
-                        <?php _e('Test API Connection', 'imgverse'); ?>
+                        <?php esc_html_e( 'Test Openverse', 'imgverse' ); ?>
                     </button>
                 </div>
             </div>
-            
-            <form method="post" action="options.php">
-                <?php settings_fields('imgv_settings'); ?>
-                
-                <div class="imgv-settings-tabs">
-                    <nav class="nav-tab-wrapper">
-                        <a href="#search-display" class="nav-tab nav-tab-active"><?php _e('Search & Display', 'imgverse'); ?></a>
-                        <a href="#api-keys" class="nav-tab"><?php _e('API Keys', 'imgverse'); ?></a>
-                        <a href="#attribution" class="nav-tab"><?php _e('Attribution', 'imgverse'); ?></a>
-                        <a href="#import" class="nav-tab"><?php _e('Import', 'imgverse'); ?></a>
-                        <a href="#performance" class="nav-tab"><?php _e('Performance', 'imgverse'); ?></a>
-                        <a href="#analytics" class="nav-tab"><?php _e('Analytics', 'imgverse'); ?></a>
-                    </nav>
-                    
-                    <div id="search-display" class="tab-content active">
-                        <h3><?php _e('Search & Display Settings', 'imgverse'); ?></h3>
-                        <table class="form-table">
-                            <tr>
-                                <th scope="row"><?php _e('Default Search Behavior', 'imgverse'); ?></th>
-                                <td>
-                                    <select name="imgv_settings[default_search_behavior]">
-                                        <option value="all_sources" <?php selected($settings['default_search_behavior'] ?? 'all_sources', 'all_sources'); ?>>
-                                            <?php _e('Search All Sources', 'imgverse'); ?>
-                                        </option>
-                                        <option value="specific_source" <?php selected($settings['default_search_behavior'] ?? '', 'specific_source'); ?>>
-                                            <?php _e('Search Specific Source', 'imgverse'); ?>
-                                        </option>
-                                    </select>
-                                    <p class="description"><?php _e('Whether to search all sources by default or allow users to select specific sources.', 'imgverse'); ?></p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Results Per Page', 'imgverse'); ?></th>
-                                <td>
-                                    <input type="number" name="imgv_settings[results_per_page]" value="<?php echo esc_attr($settings['results_per_page'] ?? 20); ?>" min="10" max="100" />
-                                    <p class="description"><?php _e('Number of images to load initially.', 'imgverse'); ?></p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Infinite Scroll', 'imgverse'); ?></th>
-                                <td>
-                                    <label>
-                                        <input type="checkbox" name="imgv_settings[enable_infinite_scroll]" value="1" <?php checked(!empty($settings['enable_infinite_scroll'])); ?> />
-                                        <?php _e('Enable infinite scroll for seamless browsing', 'imgverse'); ?>
-                                    </label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Grid Columns', 'imgverse'); ?></th>
-                                <td>
-                                    <input type="number" name="imgv_settings[grid_columns]" value="<?php echo esc_attr($settings['grid_columns'] ?? 4); ?>" min="2" max="6" />
-                                    <p class="description"><?php _e('Number of columns in the image grid.', 'imgverse'); ?></p>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
 
-                    <div id="api-keys" class="tab-content">
-                        <h3><?php _e('Provider API Keys', 'imgverse'); ?></h3>
-                        <p class="description"><?php _e('Openverse needs no key. Unsplash, Pixabay, and Pexels require your own API keys. Keys are stored server-side and are never sent to the editor JavaScript.', 'imgverse'); ?></p>
-                        <table class="form-table">
-                            <tr>
-                                <th scope="row"><label for="imgv-unsplash-access-key"><?php _e('Unsplash Access Key', 'imgverse'); ?></label></th>
-                                <td>
-                                    <input type="password" id="imgv-unsplash-access-key" name="imgv_settings[unsplash_access_key]" value="" class="regular-text" autocomplete="off" />
-                                    <p class="description"><?php _e('Leave blank to keep the existing key. Get a key from the Unsplash Developers dashboard.', 'imgverse'); ?></p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><label for="imgv-pixabay-api-key"><?php _e('Pixabay API Key', 'imgverse'); ?></label></th>
-                                <td>
-                                    <input type="password" id="imgv-pixabay-api-key" name="imgv_settings[pixabay_api_key]" value="" class="regular-text" autocomplete="off" />
-                                    <p class="description"><?php _e('Leave blank to keep the existing key. Get a key from your Pixabay account.', 'imgverse'); ?></p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><label for="imgv-pexels-api-key"><?php _e('Pexels API Key', 'imgverse'); ?></label></th>
-                                <td>
-                                    <input type="password" id="imgv-pexels-api-key" name="imgv_settings[pexels_api_key]" value="" class="regular-text" autocomplete="off" />
-                                    <p class="description"><?php _e('Leave blank to keep the existing key. Get a key from the Pexels API dashboard.', 'imgverse'); ?></p>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    
-                    <div id="attribution" class="tab-content">
-                        <h3><?php _e('Attribution Settings', 'imgverse'); ?></h3>
-                        <table class="form-table">
-                            <tr>
-                                <th scope="row"><?php _e('Attribution Template', 'imgverse'); ?></th>
-                                <td>
-                                    <textarea name="imgv_settings[default_attribution_template]" rows="3" cols="50"><?php echo esc_textarea($settings['default_attribution_template'] ?? '"{title}" by {creator} from {source}'); ?></textarea>
-                                    <p class="description">
-                                        <?php _e('Template variables:', 'imgverse'); ?> 
-                                        <code>{title}</code>, <code>{creator}</code>, <code>{source}</code>, <code>{license}</code>, <code>{license_url}</code>, <code>{url}</code>
-                                    </p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Default Attribution Style', 'imgverse'); ?></th>
-                                <td>
-                                    <select name="imgv_settings[default_attribution_style]">
-                                        <option value="simple" <?php selected($settings['default_attribution_style'] ?? 'standard', 'simple'); ?>>
-                                            <?php _e('Simple: "Image by [Creator]"', 'imgverse'); ?>
-                                        </option>
-                                        <option value="standard" <?php selected($settings['default_attribution_style'] ?? 'standard', 'standard'); ?>>
-                                            <?php _e('Standard: "[Title]" by [Creator] from [Source]', 'imgverse'); ?>
-                                        </option>
-                                        <option value="academic" <?php selected($settings['default_attribution_style'] ?? 'standard', 'academic'); ?>>
-                                            <?php _e('Academic: Full citation format', 'imgverse'); ?>
-                                        </option>
-                                        <option value="custom" <?php selected($settings['default_attribution_style'] ?? 'standard', 'custom'); ?>>
-                                            <?php _e('Custom: Use template above', 'imgverse'); ?>
-                                        </option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Attribution Placement', 'imgverse'); ?></th>
-                                <td>
-                                    <select name="imgv_settings[attribution_placement]">
-                                        <option value="caption" <?php selected($settings['attribution_placement'] ?? 'caption', 'caption'); ?>>
-                                            <?php _e('Image Caption', 'imgverse'); ?>
-                                        </option>
-                                        <option value="description" <?php selected($settings['attribution_placement'] ?? 'caption', 'description'); ?>>
-                                            <?php _e('Image Description', 'imgverse'); ?>
-                                        </option>
-                                        <option value="custom_field" <?php selected($settings['attribution_placement'] ?? 'caption', 'custom_field'); ?>>
-                                            <?php _e('Custom Field', 'imgverse'); ?>
-                                        </option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Link Behavior', 'imgverse'); ?></th>
-                                <td>
-                                    <select name="imgv_settings[link_behavior]">
-                                        <option value="source" <?php selected($settings['link_behavior'] ?? 'source', 'source'); ?>>
-                                            <?php _e('Link to Source', 'imgverse'); ?>
-                                        </option>
-                                        <option value="creator" <?php selected($settings['link_behavior'] ?? 'source', 'creator'); ?>>
-                                            <?php _e('Link to Creator', 'imgverse'); ?>
-                                        </option>
-                                        <option value="license" <?php selected($settings['link_behavior'] ?? 'source', 'license'); ?>>
-                                            <?php _e('Link to License', 'imgverse'); ?>
-                                        </option>
-                                        <option value="none" <?php selected($settings['link_behavior'] ?? 'source', 'none'); ?>>
-                                            <?php _e('No Links', 'imgverse'); ?>
-                                        </option>
-                                    </select>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    
-                    <div id="import" class="tab-content">
-                        <h3><?php _e('Import Settings', 'imgverse'); ?></h3>
-                        <table class="form-table">
-                            <tr>
-                                <th scope="row"><?php _e('Default Image Size', 'imgverse'); ?></th>
-                                <td>
-                                    <select name="imgv_settings[default_image_size]">
-                                        <option value="thumbnail" <?php selected($settings['default_image_size'] ?? 'large', 'thumbnail'); ?>>
-                                            <?php _e('Thumbnail', 'imgverse'); ?>
-                                        </option>
-                                        <option value="medium" <?php selected($settings['default_image_size'] ?? 'large', 'medium'); ?>>
-                                            <?php _e('Medium', 'imgverse'); ?>
-                                        </option>
-                                        <option value="large" <?php selected($settings['default_image_size'] ?? 'large', 'large'); ?>>
-                                            <?php _e('Large', 'imgverse'); ?>
-                                        </option>
-                                        <option value="full" <?php selected($settings['default_image_size'] ?? 'large', 'full'); ?>>
-                                            <?php _e('Full Size', 'imgverse'); ?>
-                                        </option>
-                                    </select>
-                                    <p class="description"><?php _e('Used for display defaults. Remote imports always download the full image URL; use max download dimensions below to limit stored size.', 'imgverse'); ?></p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><label for="imgv-max-download-width"><?php _e( 'Max Download Width', 'imgverse' ); ?></label></th>
-                                <td>
-                                    <input type="number" id="imgv-max-download-width" name="imgv_settings[max_download_width]" value="<?php echo esc_attr( $settings['max_download_width'] ?? 2400 ); ?>" min="0" max="10000" />
-                                    <p class="description"><?php _e( 'Max width in pixels after import. Use 0 with height 0 to disable resizing (default 2400).', 'imgverse' ); ?></p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><label for="imgv-max-download-height"><?php _e( 'Max Download Height', 'imgverse' ); ?></label></th>
-                                <td>
-                                    <input type="number" id="imgv-max-download-height" name="imgv_settings[max_download_height]" value="<?php echo esc_attr( $settings['max_download_height'] ?? 2400 ); ?>" min="0" max="10000" />
-                                    <p class="description"><?php _e( 'Max height in pixels after import. Use 0 with width 0 to disable resizing (default 2400).', 'imgverse' ); ?></p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Image Quality', 'imgverse'); ?></th>
-                                <td>
-                                    <input type="range" name="imgv_settings[image_quality]" min="60" max="100" value="<?php echo esc_attr($settings['image_quality'] ?? 90); ?>" />
-                                    <span class="imgv-quality-value"><?php echo esc_html($settings['image_quality'] ?? 90); ?>%</span>
-                                    <p class="description"><?php _e('Compression quality for imported images.', 'imgverse'); ?></p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('File Naming', 'imgverse'); ?></th>
-                                <td>
-                                    <select name="imgv_settings[file_naming]">
-                                        <option value="title" <?php selected($settings['file_naming'] ?? 'title', 'title'); ?>>
-                                            <?php _e('Use Image Title', 'imgverse'); ?>
-                                        </option>
-                                        <option value="original" <?php selected($settings['file_naming'] ?? 'title', 'original'); ?>>
-                                            <?php _e('Keep Original Filename', 'imgverse'); ?>
-                                        </option>
-                                        <option value="custom" <?php selected($settings['file_naming'] ?? 'title', 'custom'); ?>>
-                                            <?php _e('Custom Pattern', 'imgverse'); ?>
-                                        </option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Import Location', 'imgverse'); ?></th>
-                                <td>
-                                    <select name="imgv_settings[import_location]">
-                                        <option value="default" <?php selected($settings['import_location'] ?? 'default', 'default'); ?>>
-                                            <?php _e('Default WordPress Media Folder', 'imgverse'); ?>
-                                        </option>
-                                        <option value="imgverse" <?php selected($settings['import_location'] ?? 'default', 'imgverse'); ?>>
-                                            <?php _e('IMGVerse Subfolder', 'imgverse'); ?>
-                                        </option>
-                                        <option value="custom" <?php selected($settings['import_location'] ?? 'default', 'custom'); ?>>
-                                            <?php _e('Custom Subfolder', 'imgverse'); ?>
-                                        </option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Duplicate Handling', 'imgverse'); ?></th>
-                                <td>
-                                    <select name="imgv_settings[duplicate_handling]">
-                                        <option value="skip" <?php selected($settings['duplicate_handling'] ?? 'rename', 'skip'); ?>>
-                                            <?php _e('Skip Duplicates', 'imgverse'); ?>
-                                        </option>
-                                        <option value="rename" <?php selected($settings['duplicate_handling'] ?? 'rename', 'rename'); ?>>
-                                            <?php _e('Rename with Number', 'imgverse'); ?>
-                                        </option>
-                                        <option value="overwrite" <?php selected($settings['duplicate_handling'] ?? 'rename', 'overwrite'); ?>>
-                                            <?php _e('Overwrite Existing', 'imgverse'); ?>
-                                        </option>
-                                    </select>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    
-                    <div id="performance" class="tab-content">
-                        <h3><?php _e('Performance Settings', 'imgverse'); ?></h3>
-                        <table class="form-table">
-                            <tr>
-                                <th scope="row"><?php _e('Cache Duration', 'imgverse'); ?></th>
-                                <td>
-                                    <input type="number" name="imgv_settings[cache_duration]" value="<?php echo esc_attr($settings['cache_duration'] ?? 1800); ?>" min="300" max="86400" />
-                                    <span><?php _e('seconds (15 minutes to 24 hours)', 'imgverse'); ?></span>
-                                    <p class="description"><?php _e('How long to cache search results.', 'imgverse'); ?></p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Max Cache Size', 'imgverse'); ?></th>
-                                <td>
-                                    <input type="number" name="imgv_settings[max_cache_size]" value="<?php echo esc_attr($settings['max_cache_size'] ?? 10485760); ?>" min="1048576" max="104857600" />
-                                    <span><?php _e('bytes (1MB to 100MB)', 'imgverse'); ?></span>
-                                    <p class="description"><?php _e('Maximum size for database cache storage.', 'imgverse'); ?></p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Request Timeout', 'imgverse'); ?></th>
-                                <td>
-                                    <input type="number" name="imgv_settings[request_timeout]" value="<?php echo esc_attr($settings['request_timeout'] ?? 30); ?>" min="5" max="120" />
-                                    <span><?php _e('seconds', 'imgverse'); ?></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Concurrent Requests', 'imgverse'); ?></th>
-                                <td>
-                                    <input type="number" name="imgv_settings[concurrent_requests]" value="<?php echo esc_attr($settings['concurrent_requests'] ?? 3); ?>" min="1" max="10" />
-                                    <p class="description"><?php _e('Maximum simultaneous API requests.', 'imgverse'); ?></p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Rate Limiting', 'imgverse'); ?></th>
-                                <td>
-                                    <input type="number" name="imgv_settings[rate_limiting]" value="<?php echo esc_attr($settings['rate_limiting'] ?? 60); ?>" min="10" max="300" />
-                                    <span><?php _e('requests per hour', 'imgverse'); ?></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Cache Strategy', 'imgverse'); ?></th>
-                                <td>
-                                    <select name="imgv_settings[cache_strategy]">
-                                        <option value="auto" <?php selected($settings['cache_strategy'] ?? 'auto', 'auto'); ?>>
-                                            <?php _e('Auto-detect (Recommended)', 'imgverse'); ?>
-                                        </option>
-                                        <option value="external" <?php selected($settings['cache_strategy'] ?? 'auto', 'external'); ?>>
-                                            <?php _e('External Cache (Redis/Memcached)', 'imgverse'); ?>
-                                        </option>
-                                        <option value="wp_object" <?php selected($settings['cache_strategy'] ?? 'auto', 'wp_object'); ?>>
-                                            <?php _e('WordPress Object Cache', 'imgverse'); ?>
-                                        </option>
-                                        <option value="database" <?php selected($settings['cache_strategy'] ?? 'auto', 'database'); ?>>
-                                            <?php _e('Database Only', 'imgverse'); ?>
-                                        </option>
-                                        <option value="disabled" <?php selected($settings['cache_strategy'] ?? 'auto', 'disabled'); ?>>
-                                            <?php _e('No Caching', 'imgverse'); ?>
-                                        </option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php _e('Background Processing', 'imgverse'); ?></th>
-                                <td>
-                                    <label>
-                                        <input type="checkbox" name="imgv_settings[background_processing]" value="1" <?php checked(!empty($settings['background_processing'])); ?> />
-                                        <?php _e('Enable background processing for heavy operations', 'imgverse'); ?>
-                                    </label>
-                                </td>
-                            </tr>
-                        </table>
-                        
-                        <h4><?php _e('Cache Statistics', 'imgverse'); ?></h4>
-                        <div class="imgv-cache-stats">
-                            <p><strong><?php _e('Cache Method:', 'imgverse'); ?></strong> <span id="cache-method"><?php _e('Detecting...', 'imgverse'); ?></span></p>
-                            <p><strong><?php _e('Cache Hit Rate:', 'imgverse'); ?></strong> <span id="cache-hit-rate"><?php _e('Calculating...', 'imgverse'); ?></span></p>
-                            <p><strong><?php _e('Cache Size:', 'imgverse'); ?></strong> <span id="cache-size"><?php _e('Calculating...', 'imgverse'); ?></span></p>
+            <form method="post" action="options.php" class="imgv-settings__form">
+                <?php settings_fields( 'imgv_settings' ); ?>
+
+                <div class="imgv-settings__layout">
+                    <aside class="imgv-settings__nav" aria-label="<?php esc_attr_e( 'Settings sections', 'imgverse' ); ?>">
+                        <div class="imgv-settings__nav-card">
+                            <h2 class="imgv-settings__nav-title"><?php esc_html_e( 'Sections', 'imgverse' ); ?></h2>
+                            <ul class="imgv-settings__nav-list">
+                                <li><button type="button" class="imgv-settings__nav-button is-active" data-target="imgv-section-general"><?php esc_html_e( 'General', 'imgverse' ); ?></button></li>
+                                <li><button type="button" class="imgv-settings__nav-button" data-target="imgv-section-api"><?php esc_html_e( 'API Keys', 'imgverse' ); ?></button></li>
+                                <li><button type="button" class="imgv-settings__nav-button" data-target="imgv-section-attribution"><?php esc_html_e( 'Attribution', 'imgverse' ); ?></button></li>
+                                <li><button type="button" class="imgv-settings__nav-button" data-target="imgv-section-import"><?php esc_html_e( 'Import', 'imgverse' ); ?></button></li>
+                                <li><button type="button" class="imgv-settings__nav-button" data-target="imgv-section-cache"><?php esc_html_e( 'Cache', 'imgverse' ); ?></button></li>
+                            </ul>
                         </div>
-                    </div>
-                    
-                    <div id="analytics" class="tab-content">
-                        <h3><?php _e('Usage Analytics', 'imgverse'); ?></h3>
-                        <p><?php _e('Track your usage and performance metrics.', 'imgverse'); ?></p>
-                        
-                        <h4><?php _e('Import History', 'imgverse'); ?></h4>
-                        <div id="import-history">
-                            <p><?php _e('No imports yet.', 'imgverse'); ?></p>
-                        </div>
-                        
-                        <h4><?php _e('Popular Searches', 'imgverse'); ?></h4>
-                        <div id="popular-searches">
-                            <p><?php _e('No searches yet.', 'imgverse'); ?></p>
+                    </aside>
+
+                    <div class="imgv-settings__sections">
+                        <section id="imgv-section-general" class="imgv-settings-entry">
+                            <div class="imgv-settings-entry__header">
+                                <h2><?php esc_html_e( 'General', 'imgverse' ); ?></h2>
+                                <p><?php esc_html_e( 'Search results and grid layout in the media modal and sidebar.', 'imgverse' ); ?></p>
+                            </div>
+                            <div class="imgv-settings-entry__body">
+                                <table class="form-table" role="presentation">
+                                    <tr>
+                                        <th scope="row"><label for="imgv-results-per-page"><?php esc_html_e( 'Results Per Page', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <input type="number" id="imgv-results-per-page" name="imgv_settings[results_per_page]" value="<?php echo esc_attr( $settings['results_per_page'] ?? 20 ); ?>" min="10" max="100" />
+                                            <p class="description"><?php esc_html_e( 'Number of images fetched per search request (10–100).', 'imgverse' ); ?></p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><label for="imgv-grid-columns"><?php esc_html_e( 'Grid Columns', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <input type="number" id="imgv-grid-columns" name="imgv_settings[grid_columns]" value="<?php echo esc_attr( $settings['grid_columns'] ?? 4 ); ?>" min="2" max="6" />
+                                            <p class="description"><?php esc_html_e( 'Preferred number of columns in the results grid (2–6).', 'imgverse' ); ?></p>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div class="imgv-settings__stats">
+                                    <p><strong><?php esc_html_e( 'Total imports:', 'imgverse' ); ?></strong> <?php echo esc_html( (string) $stats['total_imports'] ); ?></p>
+                                    <p><strong><?php esc_html_e( 'Imports (last 7 days):', 'imgverse' ); ?></strong> <?php echo esc_html( (string) $stats['recent_imports'] ); ?></p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="imgv-section-api" class="imgv-settings-entry">
+                            <div class="imgv-settings-entry__header">
+                                <h2><?php esc_html_e( 'API Keys', 'imgverse' ); ?></h2>
+                                <p><?php esc_html_e( 'Openverse needs no key. Unsplash, Pixabay, and Pexels keys stay server-side and are never sent to the editor.', 'imgverse' ); ?></p>
+                            </div>
+                            <div class="imgv-settings-entry__body">
+                                <table class="form-table" role="presentation">
+                                    <tr>
+                                        <th scope="row"><label for="imgv-unsplash-access-key"><?php esc_html_e( 'Unsplash Access Key', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <input type="password" id="imgv-unsplash-access-key" name="imgv_settings[unsplash_access_key]" value="" class="regular-text" autocomplete="off" />
+                                            <p class="description"><?php esc_html_e( 'Leave blank to keep the existing key.', 'imgverse' ); ?></p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><label for="imgv-pixabay-api-key"><?php esc_html_e( 'Pixabay API Key', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <input type="password" id="imgv-pixabay-api-key" name="imgv_settings[pixabay_api_key]" value="" class="regular-text" autocomplete="off" />
+                                            <p class="description"><?php esc_html_e( 'Leave blank to keep the existing key.', 'imgverse' ); ?></p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><label for="imgv-pexels-api-key"><?php esc_html_e( 'Pexels API Key', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <input type="password" id="imgv-pexels-api-key" name="imgv_settings[pexels_api_key]" value="" class="regular-text" autocomplete="off" />
+                                            <p class="description"><?php esc_html_e( 'Leave blank to keep the existing key.', 'imgverse' ); ?></p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section id="imgv-section-attribution" class="imgv-settings-entry">
+                            <div class="imgv-settings-entry__header">
+                                <h2><?php esc_html_e( 'Attribution', 'imgverse' ); ?></h2>
+                                <p><?php esc_html_e( 'How credit text is built and stored on imported attachments.', 'imgverse' ); ?></p>
+                            </div>
+                            <div class="imgv-settings-entry__body">
+                                <table class="form-table" role="presentation">
+                                    <tr>
+                                        <th scope="row"><label for="imgv-attribution-style"><?php esc_html_e( 'Attribution Style', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <select id="imgv-attribution-style" name="imgv_settings[default_attribution_style]">
+                                                <option value="simple" <?php selected( $settings['default_attribution_style'] ?? 'standard', 'simple' ); ?>><?php esc_html_e( 'Simple: Image by [Creator]', 'imgverse' ); ?></option>
+                                                <option value="standard" <?php selected( $settings['default_attribution_style'] ?? 'standard', 'standard' ); ?>><?php esc_html_e( 'Standard: "[Title]" by [Creator] from [Source]', 'imgverse' ); ?></option>
+                                                <option value="academic" <?php selected( $settings['default_attribution_style'] ?? 'standard', 'academic' ); ?>><?php esc_html_e( 'Academic citation', 'imgverse' ); ?></option>
+                                                <option value="custom" <?php selected( $settings['default_attribution_style'] ?? 'standard', 'custom' ); ?>><?php esc_html_e( 'Custom template', 'imgverse' ); ?></option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><label for="imgv-attribution-template"><?php esc_html_e( 'Custom Template', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <textarea id="imgv-attribution-template" name="imgv_settings[default_attribution_template]" rows="3" cols="50"><?php echo esc_textarea( $settings['default_attribution_template'] ?? '"{title}" by {creator} from {source}' ); ?></textarea>
+                                            <p class="description">
+                                                <?php esc_html_e( 'Used when style is Custom. Variables:', 'imgverse' ); ?>
+                                                <code>{title}</code>, <code>{creator}</code>, <code>{source}</code>, <code>{license}</code>, <code>{license_url}</code>, <code>{url}</code>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><label for="imgv-attribution-placement"><?php esc_html_e( 'Placement', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <select id="imgv-attribution-placement" name="imgv_settings[attribution_placement]">
+                                                <option value="caption" <?php selected( $settings['attribution_placement'] ?? 'caption', 'caption' ); ?>><?php esc_html_e( 'Image caption (excerpt)', 'imgverse' ); ?></option>
+                                                <option value="description" <?php selected( $settings['attribution_placement'] ?? 'caption', 'description' ); ?>><?php esc_html_e( 'Image description (content)', 'imgverse' ); ?></option>
+                                                <option value="custom_field" <?php selected( $settings['attribution_placement'] ?? 'caption', 'custom_field' ); ?>><?php esc_html_e( 'Custom field (_imgv_attribution)', 'imgverse' ); ?></option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section id="imgv-section-import" class="imgv-settings-entry">
+                            <div class="imgv-settings-entry__header">
+                                <h2><?php esc_html_e( 'Import', 'imgverse' ); ?></h2>
+                                <p><?php esc_html_e( 'Download limits, quality, naming, and default insert size.', 'imgverse' ); ?></p>
+                            </div>
+                            <div class="imgv-settings-entry__body">
+                                <table class="form-table" role="presentation">
+                                    <tr>
+                                        <th scope="row"><label for="imgv-default-image-size"><?php esc_html_e( 'Default Insert Size', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <select id="imgv-default-image-size" name="imgv_settings[default_image_size]">
+                                                <option value="thumbnail" <?php selected( $settings['default_image_size'] ?? 'large', 'thumbnail' ); ?>><?php esc_html_e( 'Thumbnail', 'imgverse' ); ?></option>
+                                                <option value="medium" <?php selected( $settings['default_image_size'] ?? 'large', 'medium' ); ?>><?php esc_html_e( 'Medium', 'imgverse' ); ?></option>
+                                                <option value="large" <?php selected( $settings['default_image_size'] ?? 'large', 'large' ); ?>><?php esc_html_e( 'Large', 'imgverse' ); ?></option>
+                                                <option value="full" <?php selected( $settings['default_image_size'] ?? 'large', 'full' ); ?>><?php esc_html_e( 'Full Size', 'imgverse' ); ?></option>
+                                            </select>
+                                            <p class="description"><?php esc_html_e( 'Default size when inserting from the sidebar. Imports always download the full remote file first.', 'imgverse' ); ?></p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><label for="imgv-max-download-width"><?php esc_html_e( 'Max Download Width', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <input type="number" id="imgv-max-download-width" name="imgv_settings[max_download_width]" value="<?php echo esc_attr( $settings['max_download_width'] ?? 2400 ); ?>" min="0" max="10000" />
+                                            <p class="description"><?php esc_html_e( 'Resize after download. Set width and height to 0 to disable.', 'imgverse' ); ?></p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><label for="imgv-max-download-height"><?php esc_html_e( 'Max Download Height', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <input type="number" id="imgv-max-download-height" name="imgv_settings[max_download_height]" value="<?php echo esc_attr( $settings['max_download_height'] ?? 2400 ); ?>" min="0" max="10000" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><label for="imgv-image-quality"><?php esc_html_e( 'Image Quality', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <input type="range" id="imgv-image-quality" name="imgv_settings[image_quality]" min="60" max="100" value="<?php echo esc_attr( $settings['image_quality'] ?? 90 ); ?>" />
+                                            <span class="imgv-quality-value"><?php echo esc_html( (string) ( $settings['image_quality'] ?? 90 ) ); ?>%</span>
+                                            <p class="description"><?php esc_html_e( 'JPEG quality when a resize is applied.', 'imgverse' ); ?></p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><label for="imgv-file-naming"><?php esc_html_e( 'File Naming', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <select id="imgv-file-naming" name="imgv_settings[file_naming]">
+                                                <option value="title" <?php selected( $settings['file_naming'] ?? 'title', 'title' ); ?>><?php esc_html_e( 'Use image title', 'imgverse' ); ?></option>
+                                                <option value="original" <?php selected( $settings['file_naming'] ?? 'title', 'original' ); ?>><?php esc_html_e( 'Keep original filename', 'imgverse' ); ?></option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section id="imgv-section-cache" class="imgv-settings-entry">
+                            <div class="imgv-settings-entry__header">
+                                <h2><?php esc_html_e( 'Cache', 'imgverse' ); ?></h2>
+                                <p><?php esc_html_e( 'How long successful search results are cached.', 'imgverse' ); ?></p>
+                            </div>
+                            <div class="imgv-settings-entry__body">
+                                <table class="form-table" role="presentation">
+                                    <tr>
+                                        <th scope="row"><label for="imgv-cache-duration"><?php esc_html_e( 'Cache Duration', 'imgverse' ); ?></label></th>
+                                        <td>
+                                            <input type="number" id="imgv-cache-duration" name="imgv_settings[cache_duration]" value="<?php echo esc_attr( $settings['cache_duration'] ?? 1800 ); ?>" min="300" max="86400" />
+                                            <span><?php esc_html_e( 'seconds (5 minutes to 24 hours)', 'imgverse' ); ?></span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </section>
+
+                        <div class="imgv-settings__footer">
+                            <?php submit_button( __( 'Save Settings', 'imgverse' ) ); ?>
                         </div>
                     </div>
                 </div>
-                
-                <?php submit_button(); ?>
             </form>
         </div>
-        
-        <style>
-        .imgv-admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 20px 0;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 4px;
-        }
-        
-        .imgv-settings-tabs {
-            margin-top: 20px;
-        }
-        
-        .tab-content {
-            display: none;
-            padding: 20px 0;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .imgv-cache-stats {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 15px;
-        }
-        
-        .imgv-quality-value {
-            margin-left: 10px;
-            font-weight: bold;
-        }
-        </style>
-        
-        <script>
-        jQuery(document).ready(function($) {
-            // Tab switching
-            $('.nav-tab').on('click', function(e) {
-                e.preventDefault();
-                var target = $(this).attr('href');
-                
-                $('.nav-tab').removeClass('nav-tab-active');
-                $(this).addClass('nav-tab-active');
-                
-                $('.tab-content').removeClass('active');
-                $(target).addClass('active');
-            });
-            
-            // Quality slider
-            $('input[name="imgv_settings[image_quality]"]').on('input', function() {
-                $(this).siblings('.imgv-quality-value').text($(this).val() + '%');
-            });
-            
-            // Clear cache
-            $('#imgv-clear-cache').on('click', function() {
-                if (confirm('<?php _e('Are you sure you want to clear all cache?', 'imgverse'); ?>')) {
-                    $.post(ajaxurl, {
-                        action: 'imgv_clear_cache',
-                        nonce: '<?php echo wp_create_nonce('imgv_nonce'); ?>'
-                    }, function(response) {
-                        alert(response.message || '<?php _e('Cache cleared successfully.', 'imgverse'); ?>');
-                        location.reload();
-                    });
-                }
-            });
-            
-            // Test API
-            $('#imgv-test-api').on('click', function() {
-                var $btn = $(this);
-                $btn.prop('disabled', true).text('<?php _e('Testing...', 'imgverse'); ?>');
-                
-                $.post(ajaxurl, {
-                    action: 'imgv_search',
-                    nonce: '<?php echo wp_create_nonce('imgv_nonce'); ?>',
-                    query: 'test',
-                    page: 1
-                }, function(response) {
-                    if (response.success) {
-                        alert('<?php _e('API connection successful!', 'imgverse'); ?>');
-                    } else {
-                        alert('<?php _e('API connection failed:', 'imgverse'); ?> ' + (response.message || '<?php _e('Unknown error', 'imgverse'); ?>'));
-                    }
-                }).always(function() {
-                    $btn.prop('disabled', false).text('<?php _e('Test API Connection', 'imgverse'); ?>');
-                });
-            });
-        });
-        </script>
         <?php
     }
     

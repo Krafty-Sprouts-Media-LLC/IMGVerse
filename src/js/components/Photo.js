@@ -55,6 +55,7 @@ export default function Photo( { image, context } ) {
 	const [ inserted, setInserted ] = useState( false );
 
 	const isSidebar = 'sidebar' === context;
+	const isSuccess = Boolean( status ) && ! error;
 
 	/**
 	 * Fall back from thumb to full when the preview fails.
@@ -71,7 +72,7 @@ export default function Photo( { image, context } ) {
 	 * Import the full image into the media library.
 	 */
 	async function handleImport() {
-		if ( importing || ! urls.full ) {
+		if ( importing || ! urls.full || Boolean( status ) ) {
 			return;
 		}
 
@@ -155,122 +156,169 @@ export default function Photo( { image, context } ) {
 	const userName =
 		image.user && image.user.name ? image.user.name : '';
 
+	const stateClass = importing
+		? ' is-importing'
+		: isSuccess
+			? ' is-success'
+			: error
+				? ' is-error'
+				: '';
+
 	return (
 		<article
-			className={ `imgv-photo imgv-photo--${ context || 'modal' }` }
+			className={ `imgv-photo imgv-photo--${ context || 'modal' }${
+				expanded ? ' is-expanded' : ''
+			}${ stateClass }` }
 		>
-			<div className="imgv-photo__media">
-				{ thumbSrc ? (
-					<img
-						className="imgv-photo__thumb"
-						src={ thumbSrc }
-						alt={ alt || title || 'IMGVerse image' }
-						loading="lazy"
-						onError={ handleThumbError }
-					/>
-				) : (
-					<div className="imgv-photo__placeholder" aria-hidden="true" />
-				) }
-				<div className="imgv-photo__overlay">
-					<button
-						type="button"
-						className="imgv-photo__action"
-						onClick={ () => setExpanded( ( value ) => ! value ) }
-					>
-						{ expanded ? 'Hide details' : 'Edit details' }
-					</button>
-					<button
-						type="button"
-						className="imgv-photo__action imgv-photo__action--primary"
-						onClick={ handleImport }
-						disabled={ importing || ! urls.full || Boolean( status ) }
-					>
-						{ importing ? 'Importing…' : status || 'Import' }
-					</button>
-					{ isSidebar && attachment ? (
-						<>
-							<button
-								type="button"
-								className="imgv-photo__action imgv-photo__action--primary"
-								onClick={ handleInsert }
-								disabled={ inserted }
-							>
-								{ inserted ? 'Inserted' : 'Insert' }
-							</button>
-							<button
-								type="button"
-								className="imgv-photo__action"
-								onClick={ handleSetFeatured }
-								disabled={ featuredSet }
-							>
-								{ featuredSet
-									? 'Featured set'
-									: 'Set featured' }
-							</button>
-						</>
-					) : null }
+			<div className="imgv-photo__wrap">
+				<button
+					type="button"
+					className="imgv-photo__media"
+					onClick={ handleImport }
+					disabled={ importing || ! urls.full || Boolean( status ) }
+					aria-label={
+						importing
+							? 'Importing image'
+							: status
+								? 'Image imported'
+								: `Import ${ title || 'image' }`
+					}
+				>
+					{ thumbSrc ? (
+						<img
+							className="imgv-photo__thumb"
+							src={ thumbSrc }
+							alt={ alt || title || 'IMGVerse image' }
+							loading="lazy"
+							onError={ handleThumbError }
+						/>
+					) : (
+						<div
+							className="imgv-photo__placeholder"
+							aria-hidden="true"
+						/>
+					) }
+				</button>
+
+				<div className="imgv-photo__status" aria-hidden="true">
+					{ importing ? '…' : isSuccess ? '✓' : error ? '!' : '' }
 				</div>
-			</div>
-			<div className="imgv-photo__meta">
+
 				{ userName ? (
-					<p className="imgv-photo__credit">{ userName }</p>
-				) : null }
-				{ error ? (
-					<p className="imgv-photo__error" role="alert">
-						{ error }
-					</p>
-				) : null }
-				{ isSidebar ? (
-					<label className="imgv-photo__field imgv-photo__field--size">
-						<span>Insert size</span>
-						<select
-							value={ insertSize }
-							onChange={ ( event ) =>
-								setInsertSize( event.target.value )
-							}
-						>
-							<option value="thumbnail">Thumbnail</option>
-							<option value="medium">Medium</option>
-							<option value="large">Large</option>
-							<option value="full">Full</option>
-						</select>
-					</label>
-				) : null }
-				{ expanded ? (
-					<div className="imgv-photo__fields">
-						<label className="imgv-photo__field">
-							<span>Title</span>
-							<input
-								type="text"
-								value={ title }
-								onChange={ ( event ) =>
-									setTitle( event.target.value )
-								}
-							/>
-						</label>
-						<label className="imgv-photo__field">
-							<span>Alt text</span>
-							<input
-								type="text"
-								value={ alt }
-								onChange={ ( event ) =>
-									setAlt( event.target.value )
-								}
-							/>
-						</label>
-						<label className="imgv-photo__field">
-							<span>Caption</span>
-							<textarea
-								rows={ 2 }
-								value={ caption }
-								onChange={ ( event ) =>
-									setCaption( event.target.value )
-								}
-							/>
-						</label>
+					<div className="imgv-photo__meta-top">
+						<span className="imgv-photo__action">{ userName }</span>
 					</div>
 				) : null }
+
+				<div className="imgv-photo__controls">
+					<p className="imgv-photo__credit">
+						{ userName || title || 'IMGVerse' }
+					</p>
+					<div className="imgv-photo__actions">
+						<button
+							type="button"
+							className="imgv-photo__action"
+							onClick={ () =>
+								setExpanded( ( value ) => ! value )
+							}
+						>
+							{ expanded ? 'Hide' : 'Edit' }
+						</button>
+						<button
+							type="button"
+							className="imgv-photo__action imgv-photo__action--primary"
+							onClick={ handleImport }
+							disabled={
+								importing || ! urls.full || Boolean( status )
+							}
+						>
+							{ importing
+								? 'Importing…'
+								: status || 'Download' }
+						</button>
+						{ isSidebar && attachment ? (
+							<>
+								<button
+									type="button"
+									className="imgv-photo__action imgv-photo__action--primary"
+									onClick={ handleInsert }
+									disabled={ inserted }
+								>
+									{ inserted ? 'Inserted' : 'Insert' }
+								</button>
+								<button
+									type="button"
+									className="imgv-photo__action"
+									onClick={ handleSetFeatured }
+									disabled={ featuredSet }
+								>
+									{ featuredSet
+										? 'Featured set'
+										: 'Set featured' }
+								</button>
+							</>
+						) : null }
+					</div>
+				</div>
 			</div>
+
+			{ error ? (
+				<p className="imgv-photo__error" role="alert">
+					{ error }
+				</p>
+			) : null }
+
+			{ isSidebar ? (
+				<label className="imgv-photo__field imgv-photo__field--size">
+					<span>Insert size</span>
+					<select
+						value={ insertSize }
+						onChange={ ( event ) =>
+							setInsertSize( event.target.value )
+						}
+					>
+						<option value="thumbnail">Thumbnail</option>
+						<option value="medium">Medium</option>
+						<option value="large">Large</option>
+						<option value="full">Full</option>
+					</select>
+				</label>
+			) : null }
+
+			{ expanded ? (
+				<div className="imgv-photo__fields">
+					<label className="imgv-photo__field">
+						<span>Title</span>
+						<input
+							type="text"
+							value={ title }
+							onChange={ ( event ) =>
+								setTitle( event.target.value )
+							}
+						/>
+					</label>
+					<label className="imgv-photo__field">
+						<span>Alt text</span>
+						<input
+							type="text"
+							value={ alt }
+							onChange={ ( event ) =>
+								setAlt( event.target.value )
+							}
+						/>
+					</label>
+					<label className="imgv-photo__field">
+						<span>Caption</span>
+						<textarea
+							rows={ 2 }
+							value={ caption }
+							onChange={ ( event ) =>
+								setCaption( event.target.value )
+							}
+						/>
+					</label>
+				</div>
+			) : null }
 		</article>
 	);
 }

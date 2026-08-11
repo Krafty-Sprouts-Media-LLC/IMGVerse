@@ -5,6 +5,16 @@ All notable changes to IMGVerse will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 11/08/2026
+
+### Fixed
+- Openverse (and other) imports no longer fail with "Could not calculate resized image dimensions" when the file already fits max download W/H (`error_getting_dimensions` treated as success).
+- Settings that were decorative only are now applied: `results_per_page`, `grid_columns`, `cache_duration`, `image_quality`, `file_naming`, attribution style/placement.
+
+### Changed
+- Media modal UI rebuilt toward Instant Images quality (light chrome, provider/control row, hover photo cards, click-to-download) under IMGVerse branding.
+- Settings page rebuilt with sticky section nav and card sections; removed non-functional placeholder options.
+
 ## [2.0.1] - 11/08/2026
 
 ### Fixed

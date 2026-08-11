@@ -145,7 +145,9 @@ class IMGV_API {
             $args['page'] = $page;
         }
         if ( ! isset( $args['page_size'] ) ) {
-            $args['page_size'] = 20;
+            $settings = get_option( 'imgv_settings', array() );
+            $per_page = isset( $settings['results_per_page'] ) ? (int) $settings['results_per_page'] : 20;
+            $args['page_size'] = max( 10, min( 100, $per_page > 0 ? $per_page : 20 ) );
         }
 
         $source  = isset( $args['source'] ) ? (string) $args['source'] : '';
@@ -164,9 +166,14 @@ class IMGV_API {
             $result['message'] = '';
         }
 
-        // Cache successful results
+        // Cache successful results using settings TTL.
         if ( ! empty( $result['success'] ) ) {
-            $this->cache->set( $cache_key, $result, 1800 ); // 30 minutes
+            $settings = get_option( 'imgv_settings', array() );
+            $ttl      = isset( $settings['cache_duration'] ) ? (int) $settings['cache_duration'] : 1800;
+            if ( $ttl < 300 ) {
+                $ttl = 300;
+            }
+            $this->cache->set( $cache_key, $result, $ttl );
         }
 
         return $result;
@@ -266,14 +273,16 @@ class IMGV_API {
 	 * Pass 0 for both to disable resizing.
 	 *
 	 * @since 2.0.0
-	 * @param string $file  Absolute path to image file.
-	 * @param int    $max_w Max width in pixels (0 = unconstrained / disabled with max_h 0).
-	 * @param int    $max_h Max height in pixels (0 = unconstrained / disabled with max_w 0).
+	 * @param string $file    Absolute path to image file.
+	 * @param int    $max_w   Max width in pixels (0 = unconstrained / disabled with max_h 0).
+	 * @param int    $max_h   Max height in pixels (0 = unconstrained / disabled with max_w 0).
+	 * @param int    $quality Optional JPEG quality 60–100 (0 = editor default).
 	 * @return true|WP_Error True on success or when resize is skipped.
 	 */
-	public static function maybe_resize_file( $file, $max_w, $max_h ) {
-		$max_w = (int) $max_w;
-		$max_h = (int) $max_h;
+	public static function maybe_resize_file( $file, $max_w, $max_h, $quality = 0 ) {
+		$max_w   = (int) $max_w;
+		$max_h   = (int) $max_h;
+		$quality = (int) $quality;
 
 		if ( $max_w <= 0 && $max_h <= 0 ) {
 			return true;
@@ -298,8 +307,30 @@ class IMGV_API {
 			return $editor;
 		}
 
+		$size = $editor->get_size();
+		if ( is_array( $size ) ) {
+			$orig_w = isset( $size['width'] ) ? (int) $size['width'] : 0;
+			$orig_h = isset( $size['height'] ) ? (int) $size['height'] : 0;
+			$fits_w = ( $max_w <= 0 || $orig_w <= $max_w );
+			$fits_h = ( $max_h <= 0 || $orig_h <= $max_h );
+
+			// Already within bounds — WordPress resize() errors with
+			// error_getting_dimensions in this case; treat as success.
+			if ( $orig_w > 0 && $orig_h > 0 && $fits_w && $fits_h ) {
+				return true;
+			}
+		}
+
+		if ( $quality >= 60 && $quality <= 100 && method_exists( $editor, 'set_quality' ) ) {
+			$editor->set_quality( $quality );
+		}
+
 		$resized = $editor->resize( $max_w > 0 ? $max_w : null, $max_h > 0 ? $max_h : null, false );
 		if ( is_wp_error( $resized ) ) {
+			// Image already at/under target size — not a failure.
+			if ( 'error_getting_dimensions' === $resized->get_error_code() ) {
+				return true;
+			}
 			return $resized;
 		}
 
@@ -548,7 +579,8 @@ class IMGV_API {
 		$settings = get_option( 'imgv_settings', array() );
 		$max_w    = isset( $settings['max_download_width'] ) ? (int) $settings['max_download_width'] : 2400;
 		$max_h    = isset( $settings['max_download_height'] ) ? (int) $settings['max_download_height'] : 2400;
-		$resized  = self::maybe_resize_file( $file, $max_w, $max_h );
+		$quality  = isset( $settings['image_quality'] ) ? (int) $settings['image_quality'] : 90;
+		$resized  = self::maybe_resize_file( $file, $max_w, $max_h, $quality );
 		if ( is_wp_error( $resized ) ) {
 			self::delete_upload_file( $file );
 			return array(
@@ -557,12 +589,22 @@ class IMGV_API {
 			);
 		}
 
+		$placement = isset( $settings['attribution_placement'] ) ? $settings['attribution_placement'] : 'caption';
+		$content   = '';
+		$excerpt   = '';
+		if ( 'description' === $placement ) {
+			$content = $attribution;
+		} else {
+			// caption (default) and custom_field both store on excerpt; custom_field also gets meta below.
+			$excerpt = $attribution;
+		}
+
 		$attachment = array(
 			'guid'           => $upload['url'],
 			'post_mime_type' => $mime,
 			'post_title'     => $title,
-			'post_content'   => $attribution,
-			'post_excerpt'   => $attribution,
+			'post_content'   => $content,
+			'post_excerpt'   => $excerpt,
 			'post_status'    => 'inherit',
 		);
 
@@ -582,6 +624,10 @@ class IMGV_API {
 
 		if ( ! empty( $alt_text ) ) {
 			update_post_meta( $attachment_id, '_wp_attachment_image_alt', $alt_text );
+		}
+
+		if ( 'custom_field' === $placement && '' !== $attribution ) {
+			update_post_meta( $attachment_id, '_imgv_attribution', $attribution );
 		}
 
 		$post_id = (int) $post_id;
@@ -621,22 +667,41 @@ class IMGV_API {
      */
     public function generate_attribution($image_data) {
         $settings = get_option('imgv_settings', array());
-        $template = $settings['default_attribution_template'] ?? '"{title}" by {creator} from {source}';
-        
+        $style    = isset( $settings['default_attribution_style'] ) ? $settings['default_attribution_style'] : 'standard';
+
         $title = $image_data['title'] ?? __('Untitled', 'imgverse');
         $creator = $image_data['creator'] ?? __('Unknown', 'imgverse');
         $source = $image_data['source'] ?? '';
         $license = strtoupper($image_data['license'] ?? '');
         $license_url = $image_data['license_url'] ?? '';
         $foreign_url = $image_data['foreign_landing_url'] ?? '';
-        
-        // Replace template variables
-        $attribution = str_replace(
-            array('{title}', '{creator}', '{source}', '{license}', '{license_url}', '{url}'),
-            array($title, $creator, $source, $license, $license_url, $foreign_url),
-            $template
-        );
-        
+
+        if ( 'simple' === $style ) {
+            $attribution = sprintf(
+                /* translators: %s: image creator name */
+                __( 'Image by %s', 'imgverse' ),
+                $creator
+            );
+        } elseif ( 'academic' === $style ) {
+            $attribution = sprintf(
+                '"%1$s" (%2$s). %3$s. %4$s.',
+                $title,
+                $creator,
+                $source,
+                $license
+            );
+        } elseif ( 'custom' === $style ) {
+            $template = $settings['default_attribution_template'] ?? '"{title}" by {creator} from {source}';
+            $attribution = str_replace(
+                array('{title}', '{creator}', '{source}', '{license}', '{license_url}', '{url}'),
+                array($title, $creator, $source, $license, $license_url, $foreign_url),
+                $template
+            );
+        } else {
+            // standard
+            $attribution = sprintf( '"%1$s" by %2$s from %3$s', $title, $creator, $source );
+        }
+
         // Add license information if not already included
         if (!empty($license) && strpos($attribution, $license) === false) {
             if (!empty($license_url)) {
@@ -663,8 +728,17 @@ class IMGV_API {
         if (empty($extension)) {
             $extension = 'jpg'; // Default extension
         }
-        
-        $filename = !empty($title) ? sanitize_file_name($title) : 'imgverse-image';
+
+        $settings   = get_option( 'imgv_settings', array() );
+        $naming     = isset( $settings['file_naming'] ) ? $settings['file_naming'] : 'title';
+        $path_base  = pathinfo( (string) parse_url( $url, PHP_URL_PATH ), PATHINFO_FILENAME );
+
+        if ( 'original' === $naming && '' !== $path_base ) {
+            $filename = sanitize_file_name( $path_base );
+        } else {
+            $filename = ! empty( $title ) ? sanitize_file_name( $title ) : 'imgverse-image';
+        }
+
         $filename = preg_replace('/[^a-zA-Z0-9-_]/', '-', $filename);
         $filename = preg_replace('/-+/', '-', $filename);
         $filename = trim($filename, '-');

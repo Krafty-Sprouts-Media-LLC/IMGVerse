@@ -306,6 +306,28 @@ class Test_IMGV_API_Resize extends PHPUnit\Framework\TestCase {
 		}
 	}
 
+	public function test_maybe_resize_file_skips_when_already_within_bounds() {
+		if ( ! function_exists( 'imagecreatetruecolor' ) || ! function_exists( 'imagejpeg' ) ) {
+			$this->markTestSkipped( 'GD extension is required for resize unit tests.' );
+		}
+
+		$this->load_api();
+
+		$path = $this->create_temp_jpeg( 800, 600 );
+		try {
+			$result = IMGV_API::maybe_resize_file( $path, 2400, 2400 );
+			$this->assertTrue( $result );
+
+			$info = getimagesize( $path );
+			$this->assertSame( 800, $info[0] );
+			$this->assertSame( 600, $info[1] );
+		} finally {
+			if ( file_exists( $path ) ) {
+				unlink( $path );
+			}
+		}
+	}
+
 	/**
 	 * Zero max dimensions disable resize.
 	 *

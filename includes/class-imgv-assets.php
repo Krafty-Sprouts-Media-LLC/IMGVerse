@@ -161,6 +161,20 @@ class IMGV_Assets {
 			'defaultInsertSize' => sanitize_key(
 				isset( $settings['default_image_size'] ) ? $settings['default_image_size'] : 'large'
 			),
+			'resultsPerPage'    => max(
+				10,
+				min(
+					100,
+					isset( $settings['results_per_page'] ) ? (int) $settings['results_per_page'] : 20
+				)
+			),
+			'gridColumns'       => max(
+				2,
+				min(
+					6,
+					isset( $settings['grid_columns'] ) ? (int) $settings['grid_columns'] : 4
+				)
+			),
 			'tabTitle'          => __( 'IMGVerse', 'imgverse' ),
 			'strings'           => array(
 				'missing_api_key'          => __(
@@ -176,6 +190,11 @@ class IMGV_Assets {
 					'Error occurred. Please try again.',
 					'imgverse'
 				),
+				'welcome'                  => __(
+					'Search millions of free stock photos from Openverse, Unsplash, Pixabay, and Pexels.',
+					'imgverse'
+				),
+				'search_placeholder'       => __( 'Search images…', 'imgverse' ),
 			),
 		);
 	}

@@ -1,5 +1,5 @@
 /**
- * Empty, missing API key, and error states for the IMGVerse editor UI.
+ * Empty, welcome, missing API key, and error states for the IMGVerse editor UI.
  *
  * @package IMGVerse
  */
@@ -12,6 +12,8 @@ const DEFAULT_STRINGS = {
 	missing_api_key_settings: 'Open settings',
 	no_results: 'No images found. Try different search terms.',
 	error: 'Error occurred. Please try again.',
+	welcome:
+		'Search millions of free stock photos from Openverse, Unsplash, Pixabay, and Pexels.',
 };
 
 /**
@@ -37,7 +39,7 @@ function getLocalizedConfig() {
  * EmptyState component.
  *
  * @param {Object} props           Component props.
- * @param {string} props.reason    One of missing_api_key, no_results, or error.
+ * @param {string} props.reason    One of welcome, missing_api_key, no_results, or error.
  * @param {string} [props.message] Optional error detail when reason is error.
  * @return {JSX.Element} Empty state markup.
  */
@@ -47,7 +49,9 @@ export default function EmptyState( { reason, message } ) {
 
 	let body = merged.error;
 
-	if ( 'missing_api_key' === reason ) {
+	if ( 'welcome' === reason ) {
+		body = merged.welcome;
+	} else if ( 'missing_api_key' === reason ) {
 		body = merged.missing_api_key;
 	} else if ( 'no_results' === reason ) {
 		body = merged.no_results;

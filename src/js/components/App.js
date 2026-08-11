@@ -28,6 +28,20 @@ function getProvidersConfig() {
 }
 
 /**
+ * Grid column count from settings (2–6).
+ *
+ * @return {number} Column count.
+ */
+function getGridColumns() {
+	if ( typeof imgvData === 'undefined' || ! imgvData ) {
+		return 4;
+	}
+
+	const cols = Number( imgvData.gridColumns ) || 4;
+	return Math.min( 6, Math.max( 2, cols ) );
+}
+
+/**
  * App root component.
  *
  * @param {Object} props         Component props.
@@ -50,6 +64,7 @@ export default function App( { context = 'modal' } ) {
 
 	const providersConfig = getProvidersConfig();
 	const missingKey = providerMissingKey( provider, providersConfig );
+	const gridColumns = getGridColumns();
 
 	/**
 	 * Reset results when the provider changes.
@@ -182,9 +197,12 @@ export default function App( { context = 'modal' } ) {
 		runSearch( page + 1, true );
 	}
 
-	const reason = missingKey ? 'missing_api_key' : emptyReason;
+	const reason = missingKey
+		? 'missing_api_key'
+		: emptyReason || ( hasSearched ? '' : 'welcome' );
 	const showEmpty =
 		missingKey ||
+		! hasSearched ||
 		( hasSearched && ! loading && Boolean( emptyReason ) );
 	const canLoadMore =
 		! missingKey &&
@@ -198,37 +216,46 @@ export default function App( { context = 'modal' } ) {
 		<div
 			className={ `imgv-app imgv-app--${ context }` }
 			data-context={ context }
+			style={ { '--imgv-cols': String( gridColumns ) } }
 		>
-			<header className="imgv-app__header">
-				<div className="imgv-app__brand">
-					<span className="imgv-app__brand-mark">IMGVerse</span>
-				</div>
-				<ProviderNav
+			<div className="imgv-app__chrome">
+				<header className="imgv-app__header">
+					<div className="imgv-app__brand">
+						<span className="imgv-app__brand-mark">IMGVerse</span>
+					</div>
+					<ProviderNav
+						provider={ provider }
+						onChange={ handleProviderChange }
+					/>
+				</header>
+
+				<SearchBar
+					query={ query }
 					provider={ provider }
-					onChange={ handleProviderChange }
+					source={ source }
+					license={ license }
+					loading={ loading }
+					onQueryChange={ setQuery }
+					onSourceChange={ setSource }
+					onLicenseChange={ setLicense }
+					onSubmit={ handleSubmit }
 				/>
-			</header>
+			</div>
 
-			<SearchBar
-				query={ query }
-				provider={ provider }
-				source={ source }
-				license={ license }
-				loading={ loading }
-				onQueryChange={ setQuery }
-				onSourceChange={ setSource }
-				onLicenseChange={ setLicense }
-				onSubmit={ handleSubmit }
-			/>
-
-			<div className="imgv-app__body">
+			<div
+				className={
+					loading && ! images.length
+						? 'imgv-app__body is-loading'
+						: 'imgv-app__body'
+				}
+			>
 				{ loading && ! images.length ? (
 					<p className="imgv-app__status" role="status">
 						Searching…
 					</p>
 				) : null }
 
-				{ showEmpty ? (
+				{ showEmpty && ! ( loading && ! images.length ) ? (
 					<EmptyState reason={ reason } message={ errorMessage } />
 				) : null }
 
