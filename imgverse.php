@@ -3,7 +3,7 @@
  * Plugin Name: IMGVerse
  * Plugin URI: https://kraftysprouts.com/imgverse
  * Description: Search and insert Creative Commons images from Openverse directly into your WordPress posts and pages.
- * Version: 2.0.0
+ * Version: 2.0.1
  * Author: Krafty Sprouts Media, LLC
  * Author URI: https://kraftysprouts.com
  * License: GPL v2 or later
@@ -17,7 +17,7 @@
  * 
  * @package IMGVerse
  * @author Krafty Sprouts Media, LLC
- * @version 2.0.0
+ * @version 2.0.1
  * @since 1.0.0
  */
 
@@ -27,7 +27,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('IMGV_VERSION', '2.0.0');
+define('IMGV_VERSION', '2.0.1');
 define('IMGV_PLUGIN_FILE', __FILE__);
 define('IMGV_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('IMGV_PLUGIN_PATH', plugin_dir_path(__FILE__));

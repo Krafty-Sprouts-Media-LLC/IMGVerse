@@ -1,6 +1,6 @@
 {
   "name": "imgverse",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "scripts": {
     "start": "node node_modules/@wordpress/scripts/bin/wp-scripts.js start",

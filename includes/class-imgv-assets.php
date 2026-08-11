@@ -1,3 +1,4 @@
+<?php
 /**
  * IMGVerse asset enqueue and script localization for the React editor UI.
  *
