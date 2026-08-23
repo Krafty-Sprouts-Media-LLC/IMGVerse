@@ -3,7 +3,7 @@
 [![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-GPL%20v2%2B-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
-[![Version](https://img.shields.io/badge/Version-2.0.0-orange.svg)](https://github.com/kraftysprouts/imgverse)
+[![Version](https://img.shields.io/badge/Version-2.1.9-orange.svg)](https://github.com/Krafty-Sprouts-Media-LLC/IMGVerse)
 
 **IMGVerse** lets you search and import images from Openverse (including iNaturalist), Unsplash, Pixabay, and Pexels into the WordPress media library—with attribution, import tracking, and a shared React UI in the media modal and block editor sidebar.
 
@@ -15,9 +15,9 @@
 - Missing keys show an in-UI empty state with a link to Settings (keys stay server-side; the editor only gets `hasKey` booleans)
 
 ### Editor surfaces (2.0)
-- **Media modal** — Add Media → **IMGVerse** tab (React mount into `MediaFrame`, Instant Images–style grid)
+- **Media modal** — Add Media → **IMGVerse** tab (React mount into `MediaFrame`, responsive photo grid)
 - **Block editor sidebar** — plugin sidebar with the same search UI; **Insert** image into the post or **Set featured image** after import
-- Shared React app: provider nav, search, Openverse source filter, photo grid, thumbnail fallback, load more
+- Shared React app: provider nav, search, Openverse source filter, photo grid, thumbnail fallback, infinite scroll
 
 ### Import & WordPress integration
 - Full/large download, optional max W/H resize, then WordPress generates registered sizes
@@ -37,9 +37,11 @@
 3. Click **Install Now** and **Activate**
 
 ### Manual Installation
-1. Upload the plugin to `/wp-content/plugins/imgverse/` (or this repo folder)
+1. Upload a production zip via **Plugins → Add New → Upload Plugin**, or unzip into `/wp-content/plugins/imgverse/`
 2. Activate through the **Plugins** menu
 3. For development: `npm install` then `npm run build`
+
+**Production zip rules:** the archive’s top-level folder must be exactly `imgverse` (never `imgverse-x.y.z`), and entry paths must use forward slashes. See [docs/release-packaging.md](docs/release-packaging.md).
 
 ### Requirements
 - WordPress 5.0 or higher
@@ -122,6 +124,7 @@ npm run test:js
 
 - WordPress PHP Coding Standards
 - ESLint via `@wordpress/scripts` for `src/`
+- Shipping a test/production zip: [docs/release-packaging.md](docs/release-packaging.md)
 
 ## Security
 

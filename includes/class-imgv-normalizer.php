@@ -35,6 +35,15 @@ class IMGV_Normalizer {
 			$thumb = $full;
 		}
 
+		$width  = isset( $parts['width'] ) ? (int) $parts['width'] : 0;
+		$height = isset( $parts['height'] ) ? (int) $parts['height'] : 0;
+		if ( $width < 0 ) {
+			$width = 0;
+		}
+		if ( $height < 0 ) {
+			$height = 0;
+		}
+
 		return array(
 			'id'          => sanitize_text_field( $parts['id'] ?? '' ),
 			'title'       => sanitize_text_field( $parts['title'] ?? '' ),
@@ -43,6 +52,8 @@ class IMGV_Normalizer {
 				'thumb' => $thumb,
 				'full'  => $full,
 			),
+			'width'       => $width,
+			'height'      => $height,
 			'user'        => array(
 				'name'  => sanitize_text_field( $parts['user_name'] ?? '' ),
 				'url'   => esc_url_raw( $parts['user_url'] ?? '' ),

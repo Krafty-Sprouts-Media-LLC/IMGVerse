@@ -39,6 +39,8 @@ class Test_IMGV_Provider_Mappers extends PHPUnit\Framework\TestCase {
 			'links'       => array(
 				'html' => 'https://unsplash.com/photos/abc123',
 			),
+			'width'       => 4000,
+			'height'      => 3000,
 		);
 	}
 
@@ -59,6 +61,8 @@ class Test_IMGV_Provider_Mappers extends PHPUnit\Framework\TestCase {
 			'user_id'       => 99,
 			'pageURL'       => 'https://pixabay.com/photos/ocean-123456/',
 			'userImageURL'  => 'https://cdn.pixabay.com/user.jpg',
+			'imageWidth'    => 1920,
+			'imageHeight'   => 1280,
 		);
 	}
 
@@ -82,6 +86,8 @@ class Test_IMGV_Provider_Mappers extends PHPUnit\Framework\TestCase {
 				'medium'   => 'https://images.pexels.com/photos/987654/medium.jpeg',
 				'small'    => 'https://images.pexels.com/photos/987654/small.jpeg',
 			),
+			'width'            => 2500,
+			'height'           => 1667,
 		);
 	}
 
@@ -98,6 +104,8 @@ class Test_IMGV_Provider_Mappers extends PHPUnit\Framework\TestCase {
 		$this->assertSame( 'unsplash', $result['provider'] );
 		$this->assertSame( 'unsplash', $result['source'] );
 		$this->assertSame( 'Jane Doe', $result['user']['name'] );
+		$this->assertSame( 4000, $result['width'] );
+		$this->assertSame( 3000, $result['height'] );
 	}
 
 	public function test_pixabay_map_item_uses_preview_and_large_urls() {

@@ -1,5 +1,5 @@
 /**
- * IMGVerse Admin Styles — settings layout inspired by Instant Images quality.
+ * IMGVerse Admin Styles — settings layout and section chrome.
  *
  * @package IMGVerse
  * @author Krafty Sprouts Media, LLC
@@ -20,6 +20,24 @@
 	margin: 20px 20px 40px 0;
 }
 
+.imgv-settings > h1 {
+	margin: 0 0 8px;
+	padding: 0;
+	color: var(--imgv-text);
+}
+
+.imgv-settings > .wp-header-end {
+	margin: 0;
+	border: 0;
+	height: 0;
+}
+
+.imgv-settings > .notice,
+.imgv-settings > .updated,
+.imgv-settings > .error {
+	margin: 12px 0 16px;
+}
+
 .imgv-settings *,
 .imgv-settings *::before,
 .imgv-settings *::after {
@@ -38,14 +56,6 @@
 	border: 1px solid var(--imgv-border);
 	border-radius: var(--imgv-radius);
 	box-shadow: var(--imgv-shadow);
-}
-
-.imgv-settings__hero h1 {
-	margin: 0 0 6px;
-	padding: 0;
-	font-size: 22px;
-	font-weight: 700;
-	color: var(--imgv-text);
 }
 
 .imgv-settings__hero p {

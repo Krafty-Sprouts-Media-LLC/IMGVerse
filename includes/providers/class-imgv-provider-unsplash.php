@@ -175,6 +175,8 @@ class IMGV_Provider_Unsplash implements IMGV_Provider_Interface {
 				'provider'    => 'unsplash',
 				'source'      => 'unsplash',
 				'permalink'   => isset( $links['html'] ) ? $links['html'] : '',
+				'width'       => isset( $raw['width'] ) ? (int) $raw['width'] : 0,
+				'height'      => isset( $raw['height'] ) ? (int) $raw['height'] : 0,
 			)
 		);
 	}

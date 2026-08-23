@@ -17,7 +17,7 @@ IMGVerse is a powerful WordPress plugin that integrates with the Openverse API t
 = Key Features =
 
 * **Unified Search**: Search across all Openverse sources (Flickr, Wikimedia Commons, iNaturalist, Metropolitan Museum, NYPL, Rawpixel, Smithsonian) with a single query
-* **Media Modal Integration**: Professional media tab integration that works like Instant Images
+* **Media Modal Integration**: Add Media → IMGVerse tab with search, grid, and one-click import
 * **Block Editor Support**: Sidebar panel for Gutenberg editor with direct image block insertion
 * **Smart Caching**: Multi-level caching system with Redis/Memcached support for optimal performance
 * **Flexible Attribution**: Customizable attribution templates with multiple styles

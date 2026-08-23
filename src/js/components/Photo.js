@@ -8,6 +8,11 @@
 
 import { useState } from '@wordpress/element';
 import { getThumbSrc, nextThumbOnError } from '../utils/thumbFallback';
+import {
+	formatDimensions,
+	getOrientation,
+	getOrientationLabel,
+} from '../utils/dimensions';
 import { getPostId, importImage } from '../utils/api';
 import { insertImage } from '../editor/insertImage';
 import { setFeaturedImage } from '../editor/setFeaturedImage';
@@ -56,6 +61,15 @@ export default function Photo( { image, context } ) {
 
 	const isSidebar = 'sidebar' === context;
 	const isSuccess = Boolean( status ) && ! error;
+	const width = Number( image.width ) || 0;
+	const height = Number( image.height ) || 0;
+	const orientation = getOrientation( width, height );
+	const orientationLabel = getOrientationLabel( orientation );
+	const dimensionsLabel = formatDimensions( width, height );
+	const mediaStyle =
+		width > 0 && height > 0
+			? { aspectRatio: `${ width } / ${ height }` }
+			: undefined;
 
 	/**
 	 * Fall back from thumb to full when the preview fails.
@@ -91,6 +105,10 @@ export default function Photo( { image, context } ) {
 				caption,
 				provider: image.provider || '',
 				source: image.source || '',
+				creator: userName,
+				license: image.license || '',
+				license_url: image.license_url || '',
+				permalink: image.permalink || '',
 				post_id: getPostId(),
 			} );
 
@@ -167,13 +185,14 @@ export default function Photo( { image, context } ) {
 	return (
 		<article
 			className={ `imgv-photo imgv-photo--${ context || 'modal' }${
-				expanded ? ' is-expanded' : ''
-			}${ stateClass }` }
+				orientation ? ` imgv-photo--${ orientation }` : ''
+			}${ expanded ? ' is-expanded' : '' }${ stateClass }` }
 		>
 			<div className="imgv-photo__wrap">
 				<button
 					type="button"
 					className="imgv-photo__media"
+					style={ mediaStyle }
 					onClick={ handleImport }
 					disabled={ importing || ! urls.full || Boolean( status ) }
 					aria-label={
@@ -200,11 +219,42 @@ export default function Photo( { image, context } ) {
 					) }
 				</button>
 
-				<div className="imgv-photo__status" aria-hidden="true">
-					{ importing ? '…' : isSuccess ? '✓' : error ? '!' : '' }
-				</div>
+				{ importing ? (
+					<div className="imgv-photo__progress" role="status">
+						<span className="imgv-photo__progress-label">
+							Saving to library
+						</span>
+						<span className="imgv-photo__progress-bar" aria-hidden="true" />
+					</div>
+				) : null }
 
-				{ userName ? (
+				{ isSuccess ? (
+					<div className="imgv-photo__banner imgv-photo__banner--success" role="status">
+						Saved
+					</div>
+				) : null }
+
+				{ error ? (
+					<div className="imgv-photo__banner imgv-photo__banner--error" role="alert">
+						Failed
+					</div>
+				) : null }
+
+				{ dimensionsLabel || orientationLabel ? (
+					<div className="imgv-photo__meta-top">
+						<span
+							className={
+								orientation
+									? `imgv-photo__shape imgv-photo__shape--${ orientation }`
+									: 'imgv-photo__shape'
+							}
+						>
+							{ orientationLabel
+								? `${ orientationLabel } · ${ dimensionsLabel }`
+								: dimensionsLabel }
+						</span>
+					</div>
+				) : userName ? (
 					<div className="imgv-photo__meta-top">
 						<span className="imgv-photo__action">{ userName }</span>
 					</div>
@@ -233,7 +283,7 @@ export default function Photo( { image, context } ) {
 							}
 						>
 							{ importing
-								? 'Importing…'
+								? 'Downloading'
 								: status || 'Download' }
 						</button>
 						{ isSidebar && attachment ? (

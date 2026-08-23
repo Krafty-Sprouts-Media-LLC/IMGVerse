@@ -132,6 +132,30 @@ class IMGV_REST {
 						'default'           => '',
 						'sanitize_callback' => 'sanitize_key',
 					),
+					'creator'  => array(
+						'description'       => __( 'Creator / photographer name.', 'imgverse' ),
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'license'  => array(
+						'description'       => __( 'License slug.', 'imgverse' ),
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'license_url' => array(
+						'description'       => __( 'License URL.', 'imgverse' ),
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'esc_url_raw',
+					),
+					'permalink' => array(
+						'description'       => __( 'Original page URL.', 'imgverse' ),
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'esc_url_raw',
+					),
 					'post_id'  => array(
 						'description'       => __( 'Post to attach the image to.', 'imgverse' ),
 						'type'              => 'integer',
@@ -217,12 +241,18 @@ class IMGV_REST {
 		$result = $this->api->import_image(
 			$url,
 			(string) $request->get_param( 'title' ),
-			(string) $request->get_param( 'caption' ),
+			'',
 			(string) $request->get_param( 'alt' ),
 			'full',
 			$post_id,
 			(string) $request->get_param( 'provider' ),
-			(string) $request->get_param( 'source' )
+			(string) $request->get_param( 'source' ),
+			array(
+				'creator'     => (string) $request->get_param( 'creator' ),
+				'license'     => (string) $request->get_param( 'license' ),
+				'license_url' => (string) $request->get_param( 'license_url' ),
+				'permalink'   => (string) $request->get_param( 'permalink' ),
+			)
 		);
 
 		if ( empty( $result['success'] ) ) {

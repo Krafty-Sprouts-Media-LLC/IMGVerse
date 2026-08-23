@@ -175,6 +175,8 @@ class IMGV_Assets {
 					isset( $settings['grid_columns'] ) ? (int) $settings['grid_columns'] : 4
 				)
 			),
+			'infiniteScroll'    => ! array_key_exists( 'enable_infinite_scroll', $settings )
+				|| ! empty( $settings['enable_infinite_scroll'] ),
 			'tabTitle'          => __( 'IMGVerse', 'imgverse' ),
 			'strings'           => array(
 				'missing_api_key'          => __(

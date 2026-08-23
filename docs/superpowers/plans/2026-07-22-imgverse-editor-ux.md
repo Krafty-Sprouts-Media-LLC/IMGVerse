@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebuild IMGVerse so Add Media + block sidebar match Instant Images–class UX, with Openverse (incl. iNaturalist) plus Unsplash/Pixabay/Pexels via user API keys.
+**Goal:** Rebuild IMGVerse so Add Media + block sidebar match high-quality UX, with Openverse (incl. iNaturalist) plus Unsplash/Pixabay/Pexels via user API keys.
 
 **Architecture:** One shared React app mounted in the WP media modal and plugin sidebar; PHP REST API with provider adapters normalizing results; existing IMGVerse import/attribution/cache kept and extended.
 
@@ -15,7 +15,7 @@
 - Target version **2.0.0**; changelog + version bump on every change set that ships behavior.
 - New code `@since 2.0.0`; never rewrite existing `@since` tags.
 - WordPress Coding Standards for PHP: real tabs, `array()`, Yoda conditions, `snake_case`, visibility on methods, single quotes preferred.
-- No Instant Images proxy; Unsplash/Pixabay/Pexels keys are user-supplied and server-side only.
+- No third-party proxy; Unsplash/Pixabay/Pexels keys are user-supplied and server-side only.
 - No dedicated Gutenberg block in this plan.
 - DRY / KISS / YAGNI: one React core, one REST search shape, no duplicate Backbone UI left behind.
 - File headers required on every new file.
@@ -652,7 +652,7 @@ export async function importImage( payload ) {
 
 - [ ] **Step 3: Photo component** — `<img src={getThumbSrc(urls)} onError=... />`; edit title/alt/caption; Import button calling `importImage` with `urls.full`.
 
-- [ ] **Step 4: Style** Instant Images–like dark/light photo cards, hover controls, responsive grid. Brand as IMGVerse (no Instant Images assets).
+- [ ] **Step 4: Style** polished dark/light photo cards, hover controls, responsive grid. Brand as IMGVerse (original assets only).
 
 - [ ] **Step 5: `npm run build` — Expected: success
 
@@ -676,7 +676,7 @@ git commit -m "feat: add shared ImgVerse React search and photo grid"
 - Consumes: `App` component
 - Produces: MediaFrame router tab `imgverse` that mounts React root into frame content
 
-- [ ] **Step 1: Implement media-modal mount** (pattern from Instant Images `media-modal.js`):
+- [ ] **Step 1: Implement media-modal mount** (MediaFrame tab mount pattern):
 
 Extend `wp.media.view.MediaFrame.Select` and `Post`, add router tab, on `content:create:imgverse` / tab activation create a container `#imgverse-root` and:
 
@@ -808,7 +808,7 @@ git commit -m "docs: finalize ImgVerse 2.0.0 editor UX changelog and README"
 | Thumb fallback | 6 |
 | Error/missing key UX | 6, 7 |
 | Keep attribution / `_imgv_*` / cache | 3–5 (extend import meta) |
-| No Instant Images proxy / no Gutenberg block | Out of scope honored |
+| No third-party proxy / no Gutenberg block | Out of scope honored |
 | Version 2.0.0 + changelog | 1, 10 |
 
 No TBD placeholders remain in task steps. Interface names are consistent: `IMGV_Normalizer::from_parts`, `IMGV_Provider_Interface::search`, REST `imgverse/v1/search|import`, localized `imgvData`.

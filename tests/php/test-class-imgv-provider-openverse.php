@@ -28,6 +28,8 @@ class Test_IMGV_Provider_Openverse extends PHPUnit\Framework\TestCase {
 			'attribution'         => '"indigo-birds, whydahs" by Abubakar S. Ringim is licensed under CC BY-NC 4.0.',
 			'provider'            => 'inaturalist',
 			'source'              => 'inaturalist',
+			'width'               => 2048,
+			'height'              => 1365,
 		);
 	}
 
@@ -44,5 +46,8 @@ class Test_IMGV_Provider_Openverse extends PHPUnit\Framework\TestCase {
 			$result['urls']['full']
 		);
 		$this->assertSame( 'openverse', $result['provider'] );
+		$this->assertSame( '', $result['attribution'] );
+		$this->assertSame( 2048, $result['width'] );
+		$this->assertSame( 1365, $result['height'] );
 	}
 }

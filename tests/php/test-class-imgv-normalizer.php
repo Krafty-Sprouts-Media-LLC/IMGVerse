@@ -35,6 +35,8 @@ class Test_IMGV_Normalizer extends PHPUnit\Framework\TestCase {
 		$this->assertSame( 'https://example.com/f.jpg', $result['urls']['full'] );
 		$this->assertSame( 'inaturalist', $result['source'] );
 		$this->assertSame( 'openverse', $result['provider'] );
+		$this->assertSame( 0, $result['width'] );
+		$this->assertSame( 0, $result['height'] );
 	}
 
 	public function test_normalize_falls_back_thumb_to_full_when_thumb_empty() {
@@ -60,5 +62,22 @@ class Test_IMGV_Normalizer extends PHPUnit\Framework\TestCase {
 		);
 
 		$this->assertSame( 'https://example.com/f.jpg', $result['urls']['thumb'] );
+	}
+
+	public function test_normalize_includes_dimensions() {
+		require_once dirname( __DIR__, 2 ) . '/includes/class-imgv-normalizer.php';
+
+		$result = IMGV_Normalizer::from_parts(
+			array(
+				'id'     => 'dim',
+				'title'  => 'Wide',
+				'full'   => 'https://example.com/f.jpg',
+				'width'  => 1920,
+				'height' => 1080,
+			)
+		);
+
+		$this->assertSame( 1920, $result['width'] );
+		$this->assertSame( 1080, $result['height'] );
 	}
 }

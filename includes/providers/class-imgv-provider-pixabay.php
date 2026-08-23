@@ -161,6 +161,8 @@ class IMGV_Provider_Pixabay implements IMGV_Provider_Interface {
 				'provider'    => 'pixabay',
 				'source'      => 'pixabay',
 				'permalink'   => isset( $raw['pageURL'] ) ? $raw['pageURL'] : '',
+				'width'       => isset( $raw['imageWidth'] ) ? (int) $raw['imageWidth'] : 0,
+				'height'      => isset( $raw['imageHeight'] ) ? (int) $raw['imageHeight'] : 0,
 			)
 		);
 	}

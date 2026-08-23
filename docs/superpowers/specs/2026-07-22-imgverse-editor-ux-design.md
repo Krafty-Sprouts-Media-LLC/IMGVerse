@@ -3,18 +3,18 @@
 **Date:** 2026-07-22  
 **Status:** Implemented / ready for QA  
 **Version target:** **2.0.0**  
-**Approach:** Shared React app (Instant Images pattern), keep IMGVerse Openverse backend
+**Approach:** Shared React app (shared React app pattern), keep IMGVerse Openverse backend
 
 ## Purpose
 
-Bring IMGVerse’s media-modal and block-editor experience up to Instant Images quality while keeping IMGVerse’s Openverse strengths (including iNaturalist) and adding Unsplash, Pixabay, and Pexels.
+Bring IMGVerse’s media-modal and block-editor experience to a modern stock-image UX quality bar while keeping IMGVerse’s Openverse strengths (including iNaturalist) and adding Unsplash, Pixabay, and Pexels.
 
 ## Confirmed decisions
 
-1. **Strategy:** Rebuild IMGVerse editor UX (Approach 1). Do **not** soft-fork Instant Images as the long-term base.
+1. **Strategy:** Rebuild IMGVerse editor UX (Approach 1). Do **not** soft-fork a third-party plugin as the long-term base.
 2. **Scope (v1):** Media modal + block editor sidebar. Dedicated Gutenberg block deferred.
 3. **Providers:** Openverse (incl. iNaturalist and existing Openverse sources) + Unsplash + Pixabay + Pexels.
-4. **API keys:** Unsplash / Pixabay / Pexels use **user-supplied keys** in settings. Openverse needs no key. Instant Images’ proxy is not used.
+4. **API keys:** Unsplash / Pixabay / Pexels use **user-supplied keys** in settings. Openverse needs no key. third-party proxy is not used.
 5. **Image sizes:** Download provider large/full once; optional max W/H resize; WordPress generates registered sizes; per-image UI chooses WP size only when inserting into a post.
 6. **Keep from IMGVerse:** Openverse source list (iNaturalist, Wikimedia, etc.), caching, attribution templates, import tracking (`_imgv_*`), post attachment.
 7. **Replace:** Backbone/jQuery media tab UI and separate sidebar UI with one shared React core and thin mounts.
@@ -55,13 +55,13 @@ Bring IMGVerse’s media-modal and block-editor experience up to Instant Images 
 ### Build
 
 - `@wordpress/scripts` produces `media-modal` and `plugin-sidebar` (and shared) bundles.
-- SCSS/CSS for Instant Images–like photo grid and controls under IMGVerse branding.
+- SCSS/CSS for polished photo grid and controls under IMGVerse branding.
 
 ## Surfaces
 
 ### Media modal (primary)
 
-- Add Media → **IMGVerse** tab (Instant Images–style `MediaFrame` integration).
+- Add Media → **IMGVerse** tab (media-modal `MediaFrame` integration).
 - Full shared UI: providers, search, filters, grid, load more.
 - Photo actions: import; edit title/alt/caption before import; then select/insert via WP media flow.
 - After import: refresh media library so the attachment can be inserted normally.
@@ -87,7 +87,7 @@ Bring IMGVerse’s media-modal and block-editor experience up to Instant Images 
 | Layer | Behavior |
 |-------|----------|
 | Download | Provider large/full URL by default |
-| Optional resize | Max width/height setting before attach (Instant Images model) |
+| Optional resize | Max width/height setting before attach (optional max dimensions model) |
 | After import | WordPress generates all registered sizes |
 | Insert UI | Choose WP size for the block (`thumbnail` / `medium` / `large` / `full`) |
 | Settings | Default insert size + max download dimensions |
@@ -138,15 +138,15 @@ Do **not** map “download as thumbnail/medium” to WordPress size names agains
 
 ## Out of scope (this version)
 
-- Instant Images proxy usage
-- Soft-fork of Instant Images as product base
+- third-party proxy usage
+- Soft-fork of a third-party plugin as product base
 - Dedicated Gutenberg block
-- Giphy or other Instant Images providers beyond Unsplash / Pixabay / Pexels / Openverse
+- Giphy or other stock providers beyond Unsplash / Pixabay / Pexels / Openverse
 - Building a public IMGVerse API proxy for default keys
 
 ## Success criteria
 
-1. Add Media → IMGVerse tab feels Instant Images–class for search, grid, and import.
+1. Add Media → IMGVerse tab feels high-quality for search, grid, and import.
 2. Openverse + **iNaturalist** return usable results (no hard source whitelist excluding them).
 3. Unsplash / Pixabay / Pexels work with keys configured; blocked cleanly without keys.
 4. Sidebar can insert into post and set featured image after import.

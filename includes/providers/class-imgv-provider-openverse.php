@@ -145,10 +145,13 @@ class IMGV_Provider_Openverse implements IMGV_Provider_Interface {
 				'user_photo'  => '',
 				'license'     => isset( $raw['license'] ) ? $raw['license'] : '',
 				'license_url' => isset( $raw['license_url'] ) ? $raw['license_url'] : '',
-				'attribution' => isset( $raw['attribution'] ) ? $raw['attribution'] : '',
+				// Ignore Openverse's prebuilt attribution; IMGVerse settings rebuild it.
+				'attribution' => '',
 				'provider'    => 'openverse',
 				'source'      => isset( $raw['source'] ) ? $raw['source'] : '',
 				'permalink'   => isset( $raw['foreign_landing_url'] ) ? $raw['foreign_landing_url'] : '',
+				'width'       => isset( $raw['width'] ) ? (int) $raw['width'] : 0,
+				'height'      => isset( $raw['height'] ) ? (int) $raw['height'] : 0,
 			)
 		);
 	}

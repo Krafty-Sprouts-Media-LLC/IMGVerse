@@ -152,6 +152,8 @@ class IMGV_Provider_Pexels implements IMGV_Provider_Interface {
 				'provider'    => 'pexels',
 				'source'      => 'pexels',
 				'permalink'   => isset( $raw['url'] ) ? $raw['url'] : '',
+				'width'       => isset( $raw['width'] ) ? (int) $raw['width'] : 0,
+				'height'      => isset( $raw['height'] ) ? (int) $raw['height'] : 0,
 			)
 		);
 	}

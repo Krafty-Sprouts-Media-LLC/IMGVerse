@@ -2,9 +2,12 @@
 node_modules/
 vendor/
 .phpunit.result.cache
+package-lock.json.tmp
 
-# Isolated git worktrees
+# Isolated git worktrees / agent tooling
 .worktrees/
+.agents/
+.superpowers/
 
 # OS / editor
 .DS_Store
@@ -13,3 +16,7 @@ Thumbs.db
 
 # Local reference copy (not part of IMGVerse product)
 instant-images-main/
+
+# Production zip artifacts (build into wp-content/plugins/, not the repo)
+*.zip
+

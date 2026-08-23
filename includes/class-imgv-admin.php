@@ -62,7 +62,8 @@ class IMGV_Admin {
         $sanitized['grid_columns'] = intval($input['grid_columns'] ?? 4);
         
         // Attribution Settings
-        $sanitized['default_attribution_template'] = wp_kses_post($input['default_attribution_template'] ?? '"{title}" by {creator} from {source}');
+        $sanitized['auto_attribution'] = !empty($input['auto_attribution']);
+        $sanitized['default_attribution_template'] = wp_kses_post($input['default_attribution_template'] ?? 'Photo by {creator} / {source}');
         $sanitized['default_attribution_style'] = sanitize_text_field($input['default_attribution_style'] ?? 'standard');
         $sanitized['attribution_placement'] = sanitize_text_field($input['attribution_placement'] ?? 'caption');
         $sanitized['link_behavior'] = sanitize_text_field($input['link_behavior'] ?? 'source');
@@ -116,9 +117,11 @@ class IMGV_Admin {
         $stats = self::get_import_stats();
         ?>
         <div class="wrap imgv-settings">
+            <h1><?php esc_html_e( 'IMGVerse Settings', 'imgverse' ); ?></h1>
+            <hr class="wp-header-end" />
+
             <div class="imgv-settings__hero">
                 <div>
-                    <h1><?php esc_html_e( 'IMGVerse Settings', 'imgverse' ); ?></h1>
                     <p><?php esc_html_e( 'Configure providers, attribution, import limits, and search defaults used by the media modal and sidebar.', 'imgverse' ); ?></p>
                 </div>
                 <div class="imgv-settings__actions">
@@ -170,6 +173,19 @@ class IMGV_Admin {
                                             <p class="description"><?php esc_html_e( 'Preferred number of columns in the results grid (2–6).', 'imgverse' ); ?></p>
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <th scope="row"><?php esc_html_e( 'Infinite Scroll', 'imgverse' ); ?></th>
+                                        <td>
+                                            <?php
+                                            $infinite_scroll_on = ! array_key_exists( 'enable_infinite_scroll', $settings )
+                                                || ! empty( $settings['enable_infinite_scroll'] );
+                                            ?>
+                                            <label for="imgv-enable-infinite-scroll">
+                                                <input type="checkbox" id="imgv-enable-infinite-scroll" name="imgv_settings[enable_infinite_scroll]" value="1" <?php checked( $infinite_scroll_on ); ?> />
+                                                <?php esc_html_e( 'Automatically load more results as you scroll', 'imgverse' ); ?>
+                                            </label>
+                                        </td>
+                                    </tr>
                                 </table>
                                 <div class="imgv-settings__stats">
                                     <p><strong><?php esc_html_e( 'Total imports:', 'imgverse' ); ?></strong> <?php echo esc_html( (string) $stats['total_imports'] ); ?></p>
@@ -218,11 +234,21 @@ class IMGV_Admin {
                             <div class="imgv-settings-entry__body">
                                 <table class="form-table" role="presentation">
                                     <tr>
+                                        <th scope="row"><?php esc_html_e( 'Auto Attribution', 'imgverse' ); ?></th>
+                                        <td>
+                                            <label for="imgv-auto-attribution">
+                                                <input type="checkbox" id="imgv-auto-attribution" name="imgv_settings[auto_attribution]" value="1" <?php checked( ! isset( $settings['auto_attribution'] ) || ! empty( $settings['auto_attribution'] ) ); ?> />
+                                                <?php esc_html_e( 'Automatically add credit as the attachment caption when importing.', 'imgverse' ); ?>
+                                            </label>
+                                            <p class="description"><?php esc_html_e( 'When enabled, IMGVerse builds a clean credit from your style/template. Provider legal dumps and raw Creative Commons URLs are never stored.', 'imgverse' ); ?></p>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <th scope="row"><label for="imgv-attribution-style"><?php esc_html_e( 'Attribution Style', 'imgverse' ); ?></label></th>
                                         <td>
                                             <select id="imgv-attribution-style" name="imgv_settings[default_attribution_style]">
-                                                <option value="simple" <?php selected( $settings['default_attribution_style'] ?? 'standard', 'simple' ); ?>><?php esc_html_e( 'Simple: Image by [Creator]', 'imgverse' ); ?></option>
-                                                <option value="standard" <?php selected( $settings['default_attribution_style'] ?? 'standard', 'standard' ); ?>><?php esc_html_e( 'Standard: "[Title]" by [Creator] from [Source]', 'imgverse' ); ?></option>
+                                                <option value="simple" <?php selected( $settings['default_attribution_style'] ?? 'standard', 'simple' ); ?>><?php esc_html_e( 'Simple: Photo by [Creator]', 'imgverse' ); ?></option>
+                                                <option value="standard" <?php selected( $settings['default_attribution_style'] ?? 'standard', 'standard' ); ?>><?php esc_html_e( 'Standard: Photo by [Creator] / [Source]', 'imgverse' ); ?></option>
                                                 <option value="academic" <?php selected( $settings['default_attribution_style'] ?? 'standard', 'academic' ); ?>><?php esc_html_e( 'Academic citation', 'imgverse' ); ?></option>
                                                 <option value="custom" <?php selected( $settings['default_attribution_style'] ?? 'standard', 'custom' ); ?>><?php esc_html_e( 'Custom template', 'imgverse' ); ?></option>
                                             </select>
@@ -231,9 +257,19 @@ class IMGV_Admin {
                                     <tr>
                                         <th scope="row"><label for="imgv-attribution-template"><?php esc_html_e( 'Custom Template', 'imgverse' ); ?></label></th>
                                         <td>
-                                            <textarea id="imgv-attribution-template" name="imgv_settings[default_attribution_template]" rows="3" cols="50"><?php echo esc_textarea( $settings['default_attribution_template'] ?? '"{title}" by {creator} from {source}' ); ?></textarea>
+                                            <textarea id="imgv-attribution-template" name="imgv_settings[default_attribution_template]" rows="3" cols="50"><?php echo esc_textarea( $settings['default_attribution_template'] ?? 'Photo by {creator} / {source}' ); ?></textarea>
                                             <p class="description">
-                                                <?php esc_html_e( 'Used when style is Custom. Variables:', 'imgverse' ); ?>
+                                                <?php esc_html_e( 'Used when style is Custom. Recommended:', 'imgverse' ); ?>
+                                                <code>Photo by {creator} / {source}</code>
+                                            </p>
+                                            <p class="description">
+                                                <?php esc_html_e( 'Optional:', 'imgverse' ); ?>
+                                                <code>"{title}" by {creator} / {source}</code>
+                                                <?php esc_html_e( 'or with license code', 'imgverse' ); ?>
+                                                <code>Photo by {creator} / {source} ({license})</code>
+                                            </p>
+                                            <p class="description">
+                                                <?php esc_html_e( 'Only include what you want stored as the caption. Variables:', 'imgverse' ); ?>
                                                 <code>{title}</code>, <code>{creator}</code>, <code>{source}</code>, <code>{license}</code>, <code>{license_url}</code>, <code>{url}</code>
                                             </p>
                                         </td>
@@ -339,6 +375,15 @@ class IMGV_Admin {
      * @since 1.0.0
      */
     public function admin_notices() {
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+		if ( ! $screen || 'settings_page_imgverse-settings' !== $screen->id ) {
+			return;
+		}
+
         // Check if cache is working properly
         $cache = new IMGV_Cache();
         $stats = $cache->get_stats();

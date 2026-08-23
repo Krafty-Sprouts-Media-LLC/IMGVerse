@@ -5,14 +5,65 @@ All notable changes to IMGVerse will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.2] - 11/08/2026
+## [2.1.9] - 23/08/2026
+
+### Added
+- Documented production zip packaging rules so the install folder is always `imgverse` (no version in the folder name) and zip paths use forward slashes for WordPress uploads on Linux. See `docs/release-packaging.md`.
+
+## [2.1.8] - 11/08/2026
+
+### Changed
+- Search results now load the next page automatically as you scroll (infinite scroll). A Load more button remains available when Infinite Scroll is turned off in General settings.
+
+## [2.1.7] - 11/08/2026
+
+### Fixed
+- Settings page admin notices no longer inject inside the hero card; page uses WordPress `h1` + `wp-header-end` so notices sit below the title.
+
+## [2.1.6] - 11/08/2026
+
+### Added
+- Search results show orientation and pixel size before download (Wide / Portrait / Square · W × H), and photo cards use the real aspect ratio when providers return dimensions.
+
+## [2.1.5] - 11/08/2026
+
+### Changed
+- Attribution settings UI now shows recommended custom template examples (`Photo by {creator} / {source}` and optional variants).
+
+## [2.1.4] - 11/08/2026
+
+### Changed
+- Removed third-party product name references from comments, settings copy, readme, and changelog wording ahead of WordPress.org submission.
+
+## [2.1.3] - 11/08/2026
+
+### Changed
+- Download feedback is now IMGVerse-specific: sheen overlay + bottom “Saving to library” progress bar, corner Saved/Failed banners.
+
+## [2.1.2] - 11/08/2026
+
+### Fixed
+- Import captions are rebuilt server-side from Attribution settings as clean credits. Openverse legal dumps and raw Creative Commons URLs are never stored.
+- Search query is kept when switching providers and the search is re-run automatically.
+- Search cache keys now include provider + normalized query + filters + page + page size so results cache correctly per provider.
+
+### Added
+- Auto Attribution setting (on by default): when off, imports store no caption; when on, uses style/template only (no provider legal text).
+
+## [2.1.1] - 11/08/2026
+
+### Fixed
+- Custom attribution templates are now respected: Openverse’s prebuilt attribution (title + license blurb) is ignored, captions are rebuilt from IMGVerse style/template settings, and custom templates no longer get auto-appended license text.
+- Download/import progress no longer shows a bare “…” — uses clear in-card progress feedback.
+
+## [2.1.0] - 11/08/2026
 
 ### Fixed
 - Openverse (and other) imports no longer fail with "Could not calculate resized image dimensions" when the file already fits max download W/H (`error_getting_dimensions` treated as success).
 - Settings that were decorative only are now applied: `results_per_page`, `grid_columns`, `cache_duration`, `image_quality`, `file_naming`, attribution style/placement.
 
 ### Changed
-- Media modal UI rebuilt toward Instant Images quality (light chrome, provider/control row, hover photo cards, click-to-download) under IMGVerse branding.
+- Media modal UI rebuilt (light chrome, provider/control row, hover photo cards, click-to-download) under IMGVerse branding.
 - Settings page rebuilt with sticky section nav and card sections; removed non-functional placeholder options.
 
 ## [2.0.1] - 11/08/2026
@@ -26,7 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sidebar per-image insert size select (thumbnail/medium/large/full) defaulting to `imgvData.defaultInsertSize`.
 - Block editor plugin sidebar (`build/plugin-sidebar.js`) via `registerPlugin`, shared `<App context="sidebar" />`, and Insert / Set featured actions (`featured_media`) after import.
 - `IMGV_Assets` enqueues `build/media-modal.js` / `build/style-media-modal.css` on `wp_enqueue_media`, localizes `imgvData` (hasKey booleans only, never raw API keys), and mounts the React App into MediaFrame.Select/Post tab `imgverse` (`#imgverse-root`).
-- Shared React App (`App`, `ProviderNav`, `SearchBar`, `PhotoGrid`, `Photo`) with REST search/import client, Openverse source filter (incl. iNaturalist), thumb fallback, and Instant Images–like grid styles under IMGVerse branding.
+- Shared React App (`App`, `ProviderNav`, `SearchBar`, `PhotoGrid`, `Photo`) with REST search/import client, Openverse source filter (incl. iNaturalist), thumb fallback, and responsive photo grid styles under IMGVerse branding.
 - REST API namespace `imgverse/v1` with `GET /search` and `POST /import` (permission: `upload_files`); AJAX handlers kept for compatibility.
 - `IMGV_API::maybe_resize_file()` for optional max download dimensions (`max_download_width` / `max_download_height`, default 2400×2400, 0 disables) with GD-backed unit tests.
 - Import meta `_imgv_provider` and `_imgv_source` alongside existing `_imgv_imported`, `_imgv_import_date`, `_imgv_original_url`.
@@ -43,7 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `IMGV_API::import_image()` uses `wp_safe_remote_get()`, requires HTTP 2xx, allowlists https provider CDN hosts, validates image MIME after download, and deletes orphaned uploads on MIME/resize/attachment failures.
 
 ### Fixed
-- Media modal post-import flow selects the new attachment in the active `wp.media` frame (Instant Images style) so Insert works without hunting.
+- Media modal post-import flow selects the new attachment in the active `wp.media` frame so Insert works without hunting.
 - REST and AJAX import require `edit_post` for the target `post_id` when `post_id > 0`.
 - Provider API key password fields render empty (`value=""`); blank submit still preserves existing keys via sanitize.
 

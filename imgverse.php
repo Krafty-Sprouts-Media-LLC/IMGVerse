@@ -3,7 +3,7 @@
  * Plugin Name: IMGVerse
  * Plugin URI: https://kraftysprouts.com/imgverse
  * Description: Search and insert Creative Commons images from Openverse directly into your WordPress posts and pages.
- * Version: 2.0.2
+ * Version: 2.1.9
  * Author: Krafty Sprouts Media, LLC
  * Author URI: https://kraftysprouts.com
  * License: GPL v2 or later
@@ -17,7 +17,7 @@
  * 
  * @package IMGVerse
  * @author Krafty Sprouts Media, LLC
- * @version 2.0.2
+ * @version 2.1.9
  * @since 1.0.0
  */
 
@@ -27,7 +27,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('IMGV_VERSION', '2.0.2');
+define('IMGV_VERSION', '2.1.9');
 define('IMGV_PLUGIN_FILE', __FILE__);
 define('IMGV_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('IMGV_PLUGIN_PATH', plugin_dir_path(__FILE__));
@@ -342,7 +342,22 @@ class IMGV_Core {
 			);
 		}
         
-        $result = $this->components['api']->import_image($image_url, $title, $attribution, $alt_text, $size, $post_id);
+        $result = $this->components['api']->import_image(
+			$image_url,
+			$title,
+			'',
+			$alt_text,
+			$size,
+			$post_id,
+			sanitize_key( $_POST['provider'] ?? '' ),
+			sanitize_key( $_POST['source'] ?? '' ),
+			array(
+				'creator'     => sanitize_text_field( $_POST['creator'] ?? '' ),
+				'license'     => sanitize_text_field( $_POST['license'] ?? '' ),
+				'license_url' => esc_url_raw( $_POST['license_url'] ?? '' ),
+				'permalink'   => esc_url_raw( $_POST['permalink'] ?? '' ),
+			)
+		);
         
         wp_die(json_encode($result));
     }
@@ -416,7 +431,8 @@ class IMGV_Core {
         // Set default options
         $default_options = array(
             'default_size' => 'large',
-            'default_attribution_template' => '"{title}" by {creator} from {source}',
+            'default_attribution_template' => 'Photo by {creator} / {source}',
+            'auto_attribution' => true,
             'cache_duration' => 1800, // 30 minutes
             'max_cache_size' => 10485760, // 10MB
             'enable_infinite_scroll' => true,

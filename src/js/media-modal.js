@@ -110,7 +110,7 @@ function storeActiveFrame( frame ) {
 
 /**
  * After a successful import, switch to Media Library and select the attachment
- * so Insert can be used without hunting (Instant Images style).
+ * so Insert can be used without hunting.
  *
  * @param {Object} attachment Attachment data (needs id).
  */
