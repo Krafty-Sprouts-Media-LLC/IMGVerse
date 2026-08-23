@@ -194,7 +194,7 @@ class IMGV_Core {
      * @since 1.0.0
      */
     public function add_admin_menu() {
-        add_options_page(
+        add_media_page(
             __('IMGVerse Settings', 'imgverse'),
             __('IMGVerse', 'imgverse'),
             'manage_options',
@@ -219,7 +219,7 @@ class IMGV_Core {
      */
     public function admin_enqueue_scripts($hook) {
         // Only load on relevant pages
-        if (!in_array($hook, array('post.php', 'post-new.php', 'upload.php', 'settings_page_imgverse-settings'))) {
+        if (!in_array($hook, array('post.php', 'post-new.php', 'upload.php', 'media_page_imgverse-settings'), true)) {
             return;
         }
         

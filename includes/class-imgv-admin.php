@@ -335,6 +335,7 @@ class IMGV_Admin {
                                                 <option value="title" <?php selected( $settings['file_naming'] ?? 'title', 'title' ); ?>><?php esc_html_e( 'Use image title', 'imgverse' ); ?></option>
                                                 <option value="original" <?php selected( $settings['file_naming'] ?? 'title', 'original' ); ?>><?php esc_html_e( 'Keep original filename', 'imgverse' ); ?></option>
                                             </select>
+                                            <p class="description"><?php esc_html_e( 'How the file is named in your Media Library on import. “Use image title” builds a slug from the photo title (e.g. sunset-over-lagos.jpg). “Keep original filename” uses the name from the provider download URL when available.', 'imgverse' ); ?></p>
                                         </td>
                                     </tr>
                                 </table>
@@ -380,7 +381,7 @@ class IMGV_Admin {
 		}
 
 		$screen = get_current_screen();
-		if ( ! $screen || 'settings_page_imgverse-settings' !== $screen->id ) {
+		if ( ! $screen || 'media_page_imgverse-settings' !== $screen->id ) {
 			return;
 		}
 

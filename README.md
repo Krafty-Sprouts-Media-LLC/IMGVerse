@@ -11,8 +11,8 @@
 
 ### Multi-provider search
 - **Openverse** — no API key; filter by source (Flickr, Wikimedia Commons, **iNaturalist**, Met, NYPL, Rawpixel, Smithsonian, or all)
-- **Unsplash**, **Pixabay**, **Pexels** — use your own API keys from **Settings → IMGVerse**
-- Missing keys show an in-UI empty state with a link to Settings (keys stay server-side; the editor only gets `hasKey` booleans)
+- **Unsplash**, **Pixabay**, **Pexels** — use your own API keys from **Media → IMGVerse**
+- Missing keys show an in-UI empty state with a link to Media → IMGVerse (keys stay server-side; the editor only gets `hasKey` booleans)
 
 ### Editor surfaces (2.0)
 - **Media modal** — Add Media → **IMGVerse** tab (React mount into `MediaFrame`, responsive photo grid)
@@ -50,8 +50,8 @@
 
 ## Usage
 
-### API keys (Settings)
-1. Go to **Settings → IMGVerse**
+### API keys (Media → IMGVerse)
+1. Go to **Media → IMGVerse**
 2. Under **Provider API Keys**, add Unsplash Access Key, Pixabay API Key, and/or Pexels API Key as needed
 3. Openverse needs no key
 4. Optionally set default insert size and max download width/height

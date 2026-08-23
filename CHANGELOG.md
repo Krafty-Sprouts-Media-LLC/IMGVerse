@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.1.9] - 23/08/2026
 
-### Added
-- Documented production zip packaging rules so the install folder is always `imgverse` (no version in the folder name) and zip paths use forward slashes for WordPress uploads on Linux. See `docs/release-packaging.md`.
+### Changed
+- IMGVerse settings now live under **Media → IMGVerse** instead of Settings.
+
+### Fixed
+- File Naming setting now includes a description explaining how Media Library filenames are chosen on import.
 
 ## [2.1.8] - 11/08/2026
 

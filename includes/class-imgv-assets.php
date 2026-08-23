@@ -139,7 +139,7 @@ class IMGV_Assets {
 			'restUrl'           => esc_url_raw( rest_url( 'imgverse/v1/' ) ),
 			'nonce'             => wp_create_nonce( 'wp_rest' ),
 			'postId'            => $post_id,
-			'settingsUrl'       => esc_url_raw( admin_url( 'options-general.php?page=imgverse-settings' ) ),
+			'settingsUrl'       => esc_url_raw( admin_url( 'upload.php?page=imgverse-settings' ) ),
 			'providers'         => array(
 				'openverse' => array(
 					'needsKey' => false,
